@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from Aayush.transcribe import router as transcribe_router
+from Aayush.extract_skills import router as skills_router
 
 app = FastAPI()
 
@@ -12,6 +13,7 @@ app.add_middleware(
 )
 
 app.include_router(transcribe_router)
+app.include_router(skills_router)
 
 @app.get("/")
 def root():
