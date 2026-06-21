@@ -4,3 +4,6 @@ openai
 python-multipart
 qrcode[pil]
 pillow
+oi
+encoder
+json
