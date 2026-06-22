@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEEV — Skill Passport</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 60px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .card-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 40px 32px;
+      width: 240px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: #ffffff;
+    }
+
+    .card:hover {
+      border-color: #4f46e5;
+      transform: translateY(-4px);
+      background: #1e1e2e;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+    }
+
+    .worker-card:hover { border-color: #10b981; background: #0f1f1a; }
+    .employer-card:hover { border-color: #6366f1; background: #0f0f1f; }
+
+    .footer {
+      margin-top: 60px;
+      font-size: 12px;
+      color: #444;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">NEEV</div>
+  <div class="tagline">Voice-First Verified Skill Passport for Every Worker</div>
+
+  <div class="card-container">
+    <a href="Worker/record.html" class="card worker-card">
+      <div class="card-icon">🎙️</div>
+      <div class="card-title">Worker</div>
+      <div class="card-desc">Create your verified skill credential with your voice</div>
+    </a>
+
+    <a href="Employer/scan.html" class="card employer-card">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Employer</div>
+      <div class="card-desc">Verify a worker's skill credential instantly</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Powered by Groq Whisper · LLaMA · NSQF Framework
+  </div>
+
+</body>
+</html>

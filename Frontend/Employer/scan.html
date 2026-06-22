@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEEV — Verify Credential</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 24px;
+    }
+
+    .back {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .back:hover { color: #fff; }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .input-box {
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #888;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 13px;
+      font-family: monospace;
+      padding: 14px;
+      outline: none;
+      resize: none;
+    }
+
+    textarea:focus { border-color: #6366f1; }
+
+    .verify-btn {
+      width: 100%;
+      max-width: 480px;
+      padding: 14px;
+      background: #4f46e5;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 32px;
+      transition: background 0.2s;
+    }
+
+    .verify-btn:hover { background: #4338ca; }
+
+    .result-card {
+      width: 100%;
+      max-width: 480px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      padding: 32px;
+      display: none;
+    }
+
+    .result-card.show { display: block; }
+
+    .valid-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .valid-badge.valid {
+      background: #052e16;
+      border: 1px solid #10b981;
+      color: #10b981;
+    }
+
+    .valid-badge.invalid {
+      background: #2d0a0a;
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
+
+    .worker-name {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .verified-tag {
+      font-size: 12px;
+      color: #10b981;
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+
+    .nsqf-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #222;
+      font-size: 13px;
+    }
+
+    .nsqf-row:last-child { border-bottom: none; }
+    .nsqf-skill { color: #ccc; }
+
+    .nsqf-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nsqf-level {
+      background: #1e1e2e;
+      border: 1px solid #4f46e5;
+      color: #818cf8;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .nsqf-sector { color: #555; font-size: 12px; }
+
+    .tampered-msg {
+      color: #ef4444;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #444;
+      text-align: center;
+      margin-top: 16px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="../index.html" class="back">← Back</a>
+
+  <h1>Worker Verify Karo</h1>
+  <p class="subtitle">QR scan karke data paste karo</p>
+
+  <div class="input-box">
+    <label>QR Code ka Data Paste Karo</label>
+    <textarea id="qrInput" placeholder='{"data": {"name": "Raju", "skills": [...], "nsqf_levels": [...]}, "hash": "..."}'></textarea>
+  </div>
+
+  <button class="verify-btn" onclick="verifyCredential()">Verify Karo →</button>
+
+  <div class="result-card" id="resultCard">
+    <div class="valid-badge" id="validBadge"></div>
+    <div id="workerDetails"></div>
+  </div>
+
+  <p class="hint">QR code kisi bhi QR scanner app se scan karo, text copy karo aur yahan paste karo</p>
+
+  <script>
+    async function verifyCredential() {
+      const raw = document.getElementById('qrInput').value.trim();
+
+      if (!raw) {
+        alert('Pehle QR ka data paste karo!');
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        alert('Invalid JSON. QR ka data sahi se paste karo.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: parsed.data,
+            hash: parsed.hash
+          })
+        });
+
+        const result = await response.json();
+        showResult(result);
+
+      } catch (err) {
+        alert('Server se connect nahi ho paya. Backend chalu hai?');
+      }
+    }
+
+    function showResult(result) {
+      const card = document.getElementById('resultCard');
+      const badge = document.getElementById('validBadge');
+      const details = document.getElementById('workerDetails');
+
+      card.classList.add('show');
+
+      if (result.valid) {
+        badge.className = 'valid-badge valid';
+        badge.innerText = '✓ Verified — Genuine Credential';
+
+        const w = result.worker_data;
+        const skills = w.skills || [];
+        const levels = w.nsqf_levels || [];
+
+        details.innerHTML = `
+          <div class="worker-name">${w.name}</div>
+          <div class="verified-tag">✓ NEEV Verified Worker</div>
+          <div class="section-label">NSQF Skill Mapping</div>
+          ${skills.map((skill, i) => `
+            <div class="nsqf-row">
+              <span class="nsqf-skill">${skill}</span>
+              <div class="nsqf-right">
+                <span class="nsqf-level">Level ${levels[i] || 'N/A'}</span>
+              </div>
+            </div>`).join('')}`;
+      } else {
+        badge.className = 'valid-badge invalid';
+        badge.innerText = '✗ Invalid — Credential Tampered';
+        details.innerHTML = `
+          <div class="tampered-msg">
+            Yeh credential valid nahi hai. Data ke saath chheda-chaadi ki gayi hai ya QR corrupt ho gaya hai.
+          </div>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
