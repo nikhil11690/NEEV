@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+"""from fastapi import FastAPI
 from pydantic import BaseModel
 from hasher import hash_dict
 
@@ -13,6 +13,27 @@ def verify_credential(payload: VerifyPayload):
      recalculated_hash = hash_dict(payload.data)
      is_valid = recalculated_hash == payload.hash
      return {
+        "valid": is_valid,
+        "worker_data": payload.data
+    }
+"""
+
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+from Nikhil.hasher import hash_dict
+
+router = APIRouter()
+
+class VerifyPayload(BaseModel):
+    data: dict
+    hash: str
+
+@router.post("/verify")
+def verify_credential(payload: VerifyPayload):
+    recalculated_hash = hash_dict(payload.data)
+    is_valid = recalculated_hash == payload.hash
+    return {
         "valid": is_valid,
         "worker_data": payload.data
     }
