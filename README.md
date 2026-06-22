@@ -5,7 +5,7 @@
 
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![Theme](https://img.shields.io/badge/Theme-ROZGAAR%20%7C%20Build%20For%20Good%202026-blue)
-![Language](https://img.shields.io/badge/Languages-12%2B%20Indian%20Languages-green)
+![Language](https://img.shields.io/badge/Languages-Hindi%20%2B%20Hinglish-green)
 
 ---
 
@@ -45,14 +45,14 @@ A worker speaks. NEEV listens, extracts, maps, and certifies.
 ## ⚙️ Core Features
 
 ### 🎙️ Voice-First Skill Assessment
-- Supports 12+ Indian languages via Bhashini API
+- Hindi and Hinglish support via Groq Whisper (whisper-large-v3)
 - Conversational interface — no forms, no typing, no resume
 - Accessible to users with zero digital literacy
 
 ### 🧠 AI-Based Skill Extraction
-- Voice → Text via OpenAI Whisper / Bhashini ASR
-- LLM-based NLP extracts: skills, tools, tasks, experience duration, proficiency signals
-- Generates a structured work profile automatically from conversation
+- Voice → Text via Groq Whisper API
+- LLaMA 3.3-70b extracts occupational skills from natural speech
+- Generates a structured skill profile automatically from conversation
 
 ### 📊 NSQF Skill Mapping
 - Extracted skills mapped to **National Skills Qualification Framework (NSQF)** levels 1–8
@@ -61,17 +61,11 @@ A worker speaks. NEEV listens, extracts, maps, and certifies.
 
 ### 🔐 Verifiable Digital Credential
 - QR-linked skill passport generated per worker
-- Digitally signed — tamper-resistant
-- Stored on IPFS for decentralized, persistent access
-- Shareable via WhatsApp, SMS, or printed QR
-
-### 📱 Offline-First Architecture
-- Core voice capture and profile generation works on 2G / no connectivity
-- Auto-syncs credentials to cloud when internet is available
-- Designed for Tier 3/4 India infrastructure realities
+- SHA256 hash ensures tamper-resistance — any modification to worker data invalidates the credential
+- Shareable via screenshot, download, or printed QR
 
 ### 🏢 Employer Verification Portal
-- Employers scan QR → view verified skills, NSQF level, and trust score
+- Employers scan QR → view verified skills, NSQF level, and validity status
 - No app installation required on employer side (web-based)
 - Reduces hiring friction for blue-collar and skilled-trade roles
 
@@ -80,17 +74,17 @@ A worker speaks. NEEV listens, extracts, maps, and certifies.
 ## 🏗️ System Architecture
 
 ```
-Worker Voice Input (Hindi / Regional Language)
+Worker Voice Input (Hindi / Hinglish)
         ↓
-Speech Recognition — Whisper API / Bhashini ASR
+Speech Recognition — Groq Whisper (whisper-large-v3)
         ↓
-NLP Pipeline — Skill Extraction (LangChain + LLM)
+NLP Pipeline — Skill Extraction (LLaMA 3.3-70b via Groq)
         ↓
-NSQF Mapping Layer — Skill → Level Classification
+NSQF Mapping Layer — nsqf_map.json (40+ occupations)
         ↓
-Credential Generation — Digitally Signed JSON-LD
+Credential Generation — SHA256 signed JSON payload
         ↓
-IPFS Storage + QR Code Generation
+QR Code Generation (base64 PNG)
         ↓
 Employer Verification Portal (Web, QR Scan)
 ```
@@ -101,15 +95,63 @@ Employer Verification Portal (Web, QR Scan)
 
 | Layer | Technology |
 |---|---|
-| Frontend | React.js, Tailwind CSS |
+| Frontend | HTML, CSS, Vanilla JavaScript |
 | Backend | FastAPI, Python |
-| Speech Recognition | OpenAI Whisper, Bhashini ASR API |
-| NLP / Skill Extraction | LangChain, LLM (GPT / open-source) |
-| NSQF Mapping | Custom Classification Layer |
-| Database | PostgreSQL |
-| Credential Storage | IPFS, Digital Signatures (W3C VC standard) |
+| Speech Recognition | Groq Whisper (whisper-large-v3) |
+| Skill Extraction | LLaMA 3.3-70b via Groq API |
+| NSQF Mapping | Custom JSON classification layer |
+| Credential Security | SHA256 cryptographic hashing |
 | QR Generation | Python `qrcode` library |
-| Deployment | Docker, Render / AWS |
+| Deployment | Render.com |
+
+---
+
+## 📁 Project Structure
+
+```
+NEEV/
+├── Backend/
+│   ├── main.py                      # Entry point — all routers combined
+│   ├── requirements.txt
+│   ├── .env                         # API keys (never pushed to GitHub)
+│   ├── render.yaml                  # Render deployment config
+│   │
+│   ├── Aayush/                      # Track A — Voice & Skill Extraction
+│   │   ├── transcribe.py            # POST /transcribe
+│   │   ├── extract_skills.py        # POST /extract-skills
+│   │   ├── process.py               # POST /process (master endpoint)
+│   │   ├── nsqf_map.json            # NSQF skill mapping data
+│   │   ├── NLP_PIPELINE.md          # Track A documentation
+│   │   └── PROCESS_PIPELINE.md      # /process endpoint documentation
+│   │
+│   └── Nikhil/                      # Track B — Credential & Verification
+│       ├── hasher.py                # SHA256 hashing helper
+│       ├── credential.py            # POST /generate-credential
+│       ├── verify.py                # POST /verify
+│       └── API_CONTRACT.md          # Track B documentation
+│
+└── Frontend/                        # Laiba — UI & Frontend
+    ├── index.html                   # Landing page
+    ├── FRONTEND.md                  # Frontend documentation
+    ├── Worker/
+    │   ├── record.html              # Voice recording → calls /process
+    │   ├── confirm.html             # Skill confirmation
+    │   └── credential.html          # QR passport display
+    └── Employer/
+        └── scan.html                # QR scanner → calls /verify
+```
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/transcribe` | Audio file → Hindi transcript |
+| POST | `/extract-skills` | Transcript → skill list + NSQF mapping |
+| POST | `/process` | Audio + name → full credential + QR (master endpoint) |
+| POST | `/generate-credential` | Skills → QR code (base64 PNG) + hash |
+| POST | `/verify` | QR payload → valid/invalid + worker data |
 
 ---
 
@@ -118,16 +160,15 @@ Employer Verification Portal (Web, QR Scan)
 | Dimension | Metric |
 |---|---|
 | Target Users | 450M+ informal workers in India |
-| Language Coverage | 12+ Indian languages at launch |
-| Connectivity Requirement | Works on 2G / offline |
-| Credential Standard | W3C Verifiable Credentials + NSQF aligned |
+| Language Support | Hindi + Hinglish at launch |
+| Credential Standard | SHA256 tamper-proof + NSQF aligned |
 | Policy Alignment | Skill India Mission, NEP 2020 RPL, NSQF Framework |
 
-**For Workers:** Portable skill identity → faster hiring → higher income access → credit eligibility via income history
+**For Workers:** Portable skill identity → faster hiring → higher income access
 
-**For Employers:** Verified candidate pool → reduced screening cost → lower hiring risk for blue-collar roles
+**For Employers:** Verified candidate pool → reduced screening cost → lower hiring risk
 
-**For the Ecosystem:** Workforce formalization → data layer for government skilling programs → economic mobility at scale
+**For the Ecosystem:** Workforce formalization → data layer for government skilling programs
 
 ---
 
@@ -136,7 +177,7 @@ Employer Verification Portal (Web, QR Scan)
 | Phase | Milestone |
 |---|---|
 | **Phase 1** *(Current)* | Voice input → Skill extraction → QR credential MVP |
-| **Phase 2** | Bhashini full integration, 12-language support, offline sync |
+| **Phase 2** | Bhashini integration, 12-language support |
 | **Phase 3** | Skill India / NSDC API integration, RPL certification pathway |
 | **Phase 4** | AI job matching, employer endorsements, trust scoring |
 | **Phase 5** | Government & NGO partnerships, digital employment history ledger |
@@ -149,8 +190,8 @@ Employer Verification Portal (Web, QR Scan)
 
 | Name | Role |
 |---|---|
-| Aayush | Voice & Skill Extraction |
-| Nikhil | Credential & Verification |
+| Aayush | Voice & Skill Extraction (Backend Track A) |
+| Nikhil | Credential & Verification (Backend Track B) |
 | Laiba | Frontend & UI Development |
 
 ---
@@ -159,21 +200,24 @@ Employer Verification Portal (Web, QR Scan)
 
 ```bash
 # Clone the repository
-git clone https://github.com/[your-username]/neev.git
-cd neev
+git clone https://github.com/nikhil11690/NEEV.git
+cd NEEV
 
 # Backend setup
-cd backend
+cd Backend
+python -m venv .venv
+.venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 uvicorn main:app --reload
 
 # Frontend setup
-cd ../frontend
-npm install
-npm run dev
+# Open Frontend/index.html with VS Code Live Server
 ```
 
-> ⚠️ Environment variables required: See `.env.example` for Bhashini API key, Whisper API key, PostgreSQL connection string, and IPFS config.
+> ⚠️ Environment variables required: Create a `.env` file inside `Backend/` with:
+> ```
+> GROQ_API_KEY=your_groq_key_here
+> ```
 
 ---
 
