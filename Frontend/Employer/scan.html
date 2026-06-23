@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NEEV — Verify Credential</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -43,52 +44,93 @@
       text-align: center;
     }
 
-    .input-box {
+    .scan-options {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
       width: 100%;
       max-width: 480px;
-      margin-bottom: 16px;
     }
 
-    label {
-      font-size: 13px;
-      color: #888;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 140px;
-      background: #1a1a1a;
+    .option-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
       border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      color: #fff;
+      background: #1a1a1a;
+      color: #888;
       font-size: 13px;
-      font-family: monospace;
-      padding: 14px;
-      outline: none;
-      resize: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
     }
 
-    textarea:focus { border-color: #6366f1; }
+    .option-btn.active {
+      border-color: #6366f1;
+      color: #fff;
+      background: #1e1e2e;
+    }
 
-    .verify-btn {
+    .option-btn:hover { border-color: #555; color: #fff; }
+
+    /* Camera section */
+    .camera-section {
       width: 100%;
       max-width: 480px;
-      padding: 14px;
-      background: #4f46e5;
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 32px;
-      transition: background 0.2s;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
-    .verify-btn:hover { background: #4338ca; }
+    .camera-section.show { display: flex; }
 
+    video {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #2a2a2a;
+    }
+
+    canvas { display: none; }
+
+    .camera-status {
+      font-size: 13px;
+      color: #f59e0b;
+      text-align: center;
+    }
+
+    /* Upload section */
+    .upload-section {
+      width: 100%;
+      max-width: 480px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .upload-section.show { display: flex; }
+
+    .upload-area {
+      width: 100%;
+      border: 2px dashed #2a2a2a;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .upload-area:hover { border-color: #6366f1; }
+
+    .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-text { font-size: 14px; color: #888; }
+
+    input[type="file"] { display: none; }
+
+    /* Result card */
     .result-card {
       width: 100%;
       max-width: 480px;
@@ -96,6 +138,7 @@
       border-radius: 20px;
       padding: 32px;
       display: none;
+      margin-top: 8px;
     }
 
     .result-card.show { display: block; }
@@ -178,14 +221,20 @@
       margin-top: 8px;
     }
 
-    .hint {
-      font-size: 12px;
-      color: #444;
-      text-align: center;
-      margin-top: 16px;
-      max-width: 480px;
-      line-height: 1.6;
+    .scan-again-btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #888;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.2s;
     }
+
+    .scan-again-btn:hover { border-color: #555; color: #fff; }
   </style>
 </head>
 <body>
@@ -193,41 +242,147 @@
   <a href="../index.html" class="back">← Back</a>
 
   <h1>Worker Verify Karo</h1>
-  <p class="subtitle">QR scan karke data paste karo</p>
+  <p class="subtitle">QR scan karo ya image upload karo</p>
 
-  <div class="input-box">
-    <label>QR Code ka Data Paste Karo</label>
-    <textarea id="qrInput" placeholder='{"data": {"name": "Raju", "skills": [...], "nsqf_levels": [...]}, "hash": "..."}'></textarea>
+  <div class="scan-options">
+    <div class="option-btn" id="cameraBtn" onclick="showCamera()">📷 Camera Se Scan</div>
+    <div class="option-btn" id="uploadBtn" onclick="showUpload()">🖼️ Image Upload Karo</div>
   </div>
 
-  <button class="verify-btn" onclick="verifyCredential()">Verify Karo →</button>
+  <!-- Camera Section -->
+  <div class="camera-section" id="cameraSection">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <div class="camera-status" id="cameraStatus">Camera shuru ho rahi hai...</div>
+  </div>
 
+  <!-- Upload Section -->
+  <div class="upload-section" id="uploadSection">
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">QR code ki image yahan click karke upload karo</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)" />
+  </div>
+
+  <!-- Result Card -->
   <div class="result-card" id="resultCard">
     <div class="valid-badge" id="validBadge"></div>
     <div id="workerDetails"></div>
+    <button class="scan-again-btn" onclick="resetScanner()">Dobara Scan Karo</button>
   </div>
 
-  <p class="hint">QR code kisi bhi QR scanner app se scan karo, text copy karo aur yahan paste karo</p>
-
   <script>
-    async function verifyCredential() {
-      const raw = document.getElementById('qrInput').value.trim();
+    const BACKEND = 'https://neev-1.onrender.com';
+    let videoStream = null;
+    let scanInterval = null;
 
-      if (!raw) {
-        alert('Pehle QR ka data paste karo!');
-        return;
+    function showCamera() {
+      document.getElementById('cameraBtn').classList.add('active');
+      document.getElementById('uploadBtn').classList.remove('active');
+      document.getElementById('cameraSection').classList.add('show');
+      document.getElementById('uploadSection').classList.remove('show');
+      document.getElementById('resultCard').classList.remove('show');
+      startCamera();
+    }
+
+    function showUpload() {
+      document.getElementById('uploadBtn').classList.add('active');
+      document.getElementById('cameraBtn').classList.remove('active');
+      document.getElementById('uploadSection').classList.add('show');
+      document.getElementById('cameraSection').classList.remove('show');
+      document.getElementById('resultCard').classList.remove('show');
+      stopCamera();
+    }
+
+    async function startCamera() {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+        const video = document.getElementById('video');
+        video.srcObject = videoStream;
+        document.getElementById('cameraStatus').innerText = 'QR code camera ke saamne rakho';
+
+        // Scan every 500ms
+        scanInterval = setInterval(scanFromCamera, 500);
+      } catch (err) {
+        document.getElementById('cameraStatus').innerText = 'Camera access nahi mila. Image upload try karo.';
       }
+    }
 
+    function stopCamera() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(t => t.stop());
+        videoStream = null;
+      }
+      if (scanInterval) {
+        clearInterval(scanInterval);
+        scanInterval = null;
+      }
+    }
+
+    function scanFromCamera() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        stopCamera();
+        document.getElementById('cameraStatus').innerText = 'QR mil gaya! Verify ho raha hai...';
+        processQRData(code.data);
+      }
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+          if (code) {
+            processQRData(code.data);
+          } else {
+            alert('QR code nahi mila image mein. Dobara try karo.');
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function processQRData(rawData) {
       let parsed;
       try {
-        parsed = JSON.parse(raw);
+        parsed = JSON.parse(rawData);
       } catch (e) {
-        alert('Invalid JSON. QR ka data sahi se paste karo.');
+        alert('Invalid QR data.');
         return;
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/verify', {
+        const response = await fetch(`${BACKEND}/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -240,7 +395,7 @@
         showResult(result);
 
       } catch (err) {
-        alert('Server se connect nahi ho paya. Backend chalu hai?');
+        alert('Server se connect nahi ho paya.');
       }
     }
 
@@ -249,6 +404,8 @@
       const badge = document.getElementById('validBadge');
       const details = document.getElementById('workerDetails');
 
+      document.getElementById('cameraSection').classList.remove('show');
+      document.getElementById('uploadSection').classList.remove('show');
       card.classList.add('show');
 
       if (result.valid) {
@@ -278,6 +435,15 @@
             Yeh credential valid nahi hai. Data ke saath chheda-chaadi ki gayi hai ya QR corrupt ho gaya hai.
           </div>`;
       }
+    }
+
+    function resetScanner() {
+      document.getElementById('resultCard').classList.remove('show');
+      document.getElementById('cameraBtn').classList.remove('active');
+      document.getElementById('uploadBtn').classList.remove('active');
+      document.getElementById('cameraSection').classList.remove('show');
+      document.getElementById('uploadSection').classList.remove('show');
+      document.getElementById('fileInput').value = '';
     }
   </script>
 
