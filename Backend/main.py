@@ -7,6 +7,7 @@ from Nikhil.credential import router as credential_router
 from Nikhil.verify import router as verify_router
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from Nikhil.trust import router as trust_router
 
 
 app = FastAPI()
@@ -23,9 +24,10 @@ app.include_router(skills_router)
 app.include_router(process_router)
 app.include_router(credential_router)
 app.include_router(verify_router)
+app.include_router(trust_router)
 
-# Sabse neeche, routers ke baad
-app.mount("/", StaticFiles(directory="../Frontend", html=True), name="frontend")
+
+app.mount("/static", StaticFiles(directory="../Frontend", html=True), name="frontend")
 
 @app.get("/")
 def root():
