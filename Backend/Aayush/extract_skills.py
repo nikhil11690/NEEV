@@ -61,7 +61,7 @@ async def extract_skills(data: TranscriptInput):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a skill extractor for Indian informal workers. Extract only occupational skills from the given text. Return a JSON array of skill strings in English only. Example: [\"plastering\", \"painting\", \"driving\"]. Return ONLY the JSON array, nothing else."
+                    "content": "You are a skill extractor for Indian informal workers. Extract occupational skills and years of experience from the given text. Return ONLY a JSON array like this: [{\"skill\": \"plastering\", \"years\": 8}, {\"skill\": \"painting\", \"years\": 3}]. If years are not mentioned for a skill, set years to 0. Return ONLY the JSON array, no extra text."
                 },
                 {
                     "role": "user",
@@ -76,7 +76,15 @@ async def extract_skills(data: TranscriptInput):
         
         # Clean up in case model adds extra text
         raw = raw[raw.find("["):raw.rfind("]")+1]
-        skills = json.loads(raw)
+        parsed = json.loads(raw)
+
+        # Handle both old format ["skill"] and new format [{"skill": "x", "years": 0}]
+        if parsed and isinstance(parsed[0], str):
+            skills = parsed
+            years = [0] * len(skills)
+        else:
+            skills = [item["skill"] for item in parsed]
+            years = [item.get("years", 0) for item in parsed]
         
         # Match to NSQF
         nsqf_results = match_nsqf(skills)
@@ -85,6 +93,7 @@ async def extract_skills(data: TranscriptInput):
             "success": True,
             "transcript": data.transcript,
             "skills": skills,
+            "years": years,
             "nsqf_mapping": nsqf_results
         }
     
