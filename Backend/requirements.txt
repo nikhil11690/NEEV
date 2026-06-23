@@ -4,4 +4,4 @@ openai
 python-multipart
 qrcode[pil]
 pillow
-
+sqlalchemy
