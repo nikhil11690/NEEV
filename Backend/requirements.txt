@@ -5,3 +5,4 @@ python-multipart
 qrcode[pil]
 pillow
 sqlalchemy
+reportlab

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from Nikhil.trust import router as trust_router
 from Aayush.validate import router as validate_router
+from Nikhil.passport import router as passport_router
 
 app = FastAPI()
 
@@ -26,6 +27,7 @@ app.include_router(credential_router)
 app.include_router(verify_router)
 app.include_router(trust_router)
 app.include_router(validate_router)
+app.include_router(passport_router)
 
 
 app.mount("/static", StaticFiles(directory="../Frontend", html=True), name="frontend")
