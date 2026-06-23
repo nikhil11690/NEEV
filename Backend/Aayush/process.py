@@ -77,13 +77,13 @@ async def process_worker(name: str, audio: UploadFile = File(...)):
             )
         transcript_text = transcript.text
 
-        # Step 2 — Extract Skills
+        # Step 2 — Extract Skills + Years + Confidence
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a skill extractor for Indian informal workers. Extract only occupational skills from the given text. Return a JSON array of skill strings in English only. Example: [\"plastering\", \"painting\", \"driving\"]. Return ONLY the JSON array, nothing else."
+                    "content": "You are a skill extractor for Indian informal workers. Extract occupational skills, years of experience, and confidence level from the given text. Confidence is high if the worker mentions the skill multiple times or with specific details, medium if mentioned once clearly, low if only briefly mentioned. Return ONLY a JSON array like this: [{\"skill\": \"plastering\", \"years\": 8, \"confidence\": \"high\"}, {\"skill\": \"painting\", \"years\": 3, \"confidence\": \"medium\"}]. If years are not mentioned, set years to 0. Return ONLY the JSON array, no extra text."
                 },
                 {
                     "role": "user",
@@ -95,7 +95,17 @@ async def process_worker(name: str, audio: UploadFile = File(...)):
 
         raw = response.choices[0].message.content.strip()
         raw = raw[raw.find("["):raw.rfind("]")+1]
-        skills = json.loads(raw)
+        parsed = json.loads(raw)
+
+        # Handle both old format ["skill"] and new format [{"skill": "x", "years": 0}]
+        if parsed and isinstance(parsed[0], str):
+            skills = parsed
+            years = [0] * len(skills)
+            confidence = ["medium"] * len(skills)
+        else:
+            skills = [item["skill"] for item in parsed]
+            years = [item.get("years", 0) for item in parsed]
+            confidence = [item.get("confidence", "medium") for item in parsed]
 
         # Step 3 — NSQF Mapping
         matched_skills, nsqf_levels, nsqf_details = match_nsqf(skills)
@@ -125,6 +135,8 @@ async def process_worker(name: str, audio: UploadFile = File(...)):
             "name": name,
             "transcript": transcript_text,
             "skills": matched_skills,
+            "years": years,
+            "confidence": confidence,
             "nsqf_mapping": nsqf_details,
             "hash": credential_hash,
             "qr_code_base64": qr_base64

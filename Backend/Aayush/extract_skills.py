@@ -61,7 +61,7 @@ async def extract_skills(data: TranscriptInput):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a skill extractor for Indian informal workers. Extract occupational skills and years of experience from the given text. Return ONLY a JSON array like this: [{\"skill\": \"plastering\", \"years\": 8}, {\"skill\": \"painting\", \"years\": 3}]. If years are not mentioned for a skill, set years to 0. Return ONLY the JSON array, no extra text."
+                    "content": "You are a skill extractor for Indian informal workers. Extract occupational skills, years of experience, and confidence level from the given text. Confidence is high if the worker mentions the skill multiple times or with specific details, medium if mentioned once clearly, low if only briefly mentioned. Return ONLY a JSON array like this: [{\"skill\": \"plastering\", \"years\": 8, \"confidence\": \"high\"}, {\"skill\": \"painting\", \"years\": 3, \"confidence\": \"medium\"}]. If years are not mentioned, set years to 0. Return ONLY the JSON array, no extra text."
                 },
                 {
                     "role": "user",
@@ -85,6 +85,7 @@ async def extract_skills(data: TranscriptInput):
         else:
             skills = [item["skill"] for item in parsed]
             years = [item.get("years", 0) for item in parsed]
+            confidence = [item.get("confidence", "medium") for item in parsed]
         
         # Match to NSQF
         nsqf_results = match_nsqf(skills)
@@ -94,6 +95,7 @@ async def extract_skills(data: TranscriptInput):
             "transcript": data.transcript,
             "skills": skills,
             "years": years,
+            "confidence": confidence,
             "nsqf_mapping": nsqf_results
         }
     
