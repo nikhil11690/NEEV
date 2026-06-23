@@ -8,7 +8,9 @@ from pydantic import BaseModel
 load_dotenv()
 
 router = APIRouter()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 class SkillInput(BaseModel):
     skill: str
@@ -16,6 +18,7 @@ class SkillInput(BaseModel):
 
 @router.post("/generate-question")
 async def generate_question(data: SkillInput):
+    client = get_client()
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -52,12 +55,14 @@ Return ONLY the question, nothing else."""
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Question generation error: {str(e)}")
+
 @router.post("/validate-answer")
 async def validate_answer(
     skill: str,
     question: str,
     audio: UploadFile = File(...)
 ):
+    client = get_client()
     allowed_types = ["audio/wav", "audio/mpeg", "audio/webm", "audio/mp4", "audio/ogg"]
     if audio.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid file type.")
