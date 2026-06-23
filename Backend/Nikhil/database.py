@@ -37,6 +37,17 @@ class Verification(Base):
     qr_hash = Column(String)
     verified_at = Column(DateTime, default=datetime.utcnow)
 
+class CommunityEndorsement(Base):
+    __tablename__ = "endorsements"
+
+    id = Column(Integer, primary_key=True)
+    worker_name = Column(String, index=True)
+    endorser_name = Column(String)
+    endorser_role = Column(String)   # e.g. "contractor", "supervisor", "co-worker"
+    relationship_duration = Column(String)  # e.g. "2 years"
+    comment = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 Base.metadata.create_all(engine)
 
 SessionLocal = sessionmaker(bind=engine)
