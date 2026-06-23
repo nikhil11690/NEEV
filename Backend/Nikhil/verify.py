@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from Nikhil.hasher import hash_dict
 from Nikhil.database import get_db, Review, Verification
 from datetime import datetime
@@ -36,7 +37,9 @@ def verify_credential(payload: VerifyPayload, db: Session = Depends(get_db)):
     db.commit()
 
     # Step 3: Employer reviews nikalo
-    reviews = db.query(Review).filter(Review.worker_name == worker_name).all()
+    reviews = db.query(Review).filter(
+        func.lower(Review.worker_name) == func.lower(worker_name)
+    ).all()
     
     employer_score = 0.0
     reviews_list = []

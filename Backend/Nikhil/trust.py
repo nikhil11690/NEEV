@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from Nikhil.database import get_db, Review
 
 router = APIRouter()
@@ -37,7 +38,9 @@ class TrustScoreRequest(BaseModel):
 
 @router.post("/trust-score")
 def calculate_trust_score(request: TrustScoreRequest, db: Session = Depends(get_db)):
-    reviews = db.query(Review).filter(Review.worker_name == request.worker_name).all()
+    reviews = db.query(Review).filter(
+        func.lower(Review.worker_name) == func.lower(request.worker_name)
+    ).all()
     
     employer_score = 0.0
 
@@ -68,7 +71,9 @@ class FraudCheckRequest(BaseModel):
 
 @router.post("/fraud-check")
 def fraud_check(request: FraudCheckRequest, db: Session = Depends(get_db)):
-    reviews = db.query(Review).filter(Review.worker_name == request.worker_name).all()
+    reviews = db.query(Review).filter(
+        func.lower(Review.worker_name) == func.lower(request.worker_name)
+    ).all()
     
     if not reviews:
         return {
@@ -94,6 +99,8 @@ def fraud_check(request: FraudCheckRequest, db: Session = Depends(get_db)):
         return {"fraud_risk": "medium", "flags": fraud_flags}
     else:
         return {"fraud_risk": "high", "flags": fraud_flags}
+
+
 @router.get("/stats")
 def get_stats(db: Session = Depends(get_db)):
     from Nikhil.database import Worker, Verification
@@ -116,4 +123,4 @@ def get_stats(db: Session = Depends(get_db)):
         "average_employer_rating": avg,
         "platform": "NEEV Skill Passport",
         "status": "live"
-    } 
+    }

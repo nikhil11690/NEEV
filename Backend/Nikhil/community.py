@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from Nikhil.database import get_db, CommunityEndorsement
 
 router = APIRouter()
@@ -34,7 +35,7 @@ def add_endorsement(request: EndorsementRequest, db: Session = Depends(get_db)):
 @router.get("/endorsements/{worker_name}")
 def get_endorsements(worker_name: str, db: Session = Depends(get_db)):
     endorsements = db.query(CommunityEndorsement).filter(
-        CommunityEndorsement.worker_name == worker_name
+        func.lower(CommunityEndorsement.worker_name) == func.lower(worker_name)
     ).all()
 
     return {
