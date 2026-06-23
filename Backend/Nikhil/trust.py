@@ -94,3 +94,26 @@ def fraud_check(request: FraudCheckRequest, db: Session = Depends(get_db)):
         return {"fraud_risk": "medium", "flags": fraud_flags}
     else:
         return {"fraud_risk": "high", "flags": fraud_flags}
+@router.get("/stats")
+def get_stats(db: Session = Depends(get_db)):
+    from Nikhil.database import Worker, Verification
+    
+    total_reviews = db.query(Review).count()
+    total_verifications = db.query(Verification).count()
+    
+    fraud_high = db.query(Review).filter(
+        Review.skill_level == "beginner",
+        Review.claimed_experience_years >= 5
+    ).count()
+    
+    avg_rating = db.query(Review).all()
+    avg = round(sum(r.rating for r in avg_rating) / len(avg_rating), 2) if avg_rating else 0
+    
+    return {
+        "total_reviews": total_reviews,
+        "total_verifications": total_verifications,
+        "fraud_cases_detected": fraud_high,
+        "average_employer_rating": avg,
+        "platform": "NEEV Skill Passport",
+        "status": "live"
+    } 
