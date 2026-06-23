@@ -26,7 +26,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
             transcript = client.audio.transcriptions.create(
                 model="whisper-large-v3",
                 file=f,
-                language="hi"
+                # language parameter hatao — Whisper khud detect karega
             )
         
         return {
