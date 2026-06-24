@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Verify a Worker</title>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="../index.html" class="back-link">← Home</a>
+  </div>
+
+  <nav class="crumbs">Employer <span class="sep">/</span> <span class="on">Verify</span></nav>
+  <h1>Verify a worker</h1>
+  <p class="lede">Scan their passport QR, or upload a screenshot of it.</p>
+
+  <div class="opt-row">
+    <div class="opt-btn" id="cameraBtn" onclick="showCamera()">📷 Scan with camera</div>
+    <div class="opt-btn" id="uploadBtn" onclick="showUpload()">🖼️ Upload image</div>
+  </div>
+
+  <div id="cameraSection" style="display:none;flex-direction:column;gap:12px;margin-bottom:20px;">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div class="status-line" id="cameraStatus">Starting camera…</div>
+  </div>
+
+  <div id="uploadSection" style="display:none;flex-direction:column;gap:12px;margin-bottom:20px;">
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:34px;margin-bottom:10px;">📁</div>
+      <div style="font-size:13.5px;color:var(--ink-dim);">Click to upload the QR image</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)" />
+  </div>
+
+  <div id="resultArea" style="display:none;"></div>
+  <button class="btn btn-ghost" id="againBtn" style="display:none;margin-top:8px;" onclick="resetScanner()">Scan another</button>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  let videoStream = null, scanInterval = null;
+
+  function showCamera() {
+    document.getElementById('cameraBtn').classList.add('active');
+    document.getElementById('uploadBtn').classList.remove('active');
+    document.getElementById('cameraSection').style.display = 'flex';
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('againBtn').style.display = 'none';
+    startCamera();
+  }
+
+  function showUpload() {
+    document.getElementById('uploadBtn').classList.add('active');
+    document.getElementById('cameraBtn').classList.remove('active');
+    document.getElementById('uploadSection').style.display = 'flex';
+    document.getElementById('cameraSection').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('againBtn').style.display = 'none';
+    stopCamera();
+  }
+
+  async function startCamera() {
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.getElementById('video');
+      video.srcObject = videoStream;
+      document.getElementById('cameraStatus').innerText = 'Point the camera at the QR code';
+      scanInterval = setInterval(scanFromCamera, 500);
+    } catch (err) {
+      document.getElementById('cameraStatus').innerText = 'Camera access denied — try uploading an image instead.';
+    }
+  }
+
+  function stopCamera() {
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+  }
+
+  function scanFromCamera() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      stopCamera();
+      document.getElementById('cameraStatus').innerText = 'QR found — verifying…';
+      processQRData(code.data);
+    }
+  }
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) processQRData(code.data);
+        else alert('No QR code found in that image. Try another.');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function processQRData(rawData) {
+    let parsed;
+    try { parsed = JSON.parse(rawData); } catch (e) { alert('Invalid QR data.'); return; }
+    try {
+      const result = await neevFetch('/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: parsed.data, hash: parsed.hash })
+      });
+      await showResult(result);
+    } catch (err) {
+      alert('Could not reach the server. Try again in a moment.');
+    }
+  }
+
+  async function showResult(result) {
+    document.getElementById('cameraSection').style.display = 'none';
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('cameraBtn').classList.remove('active');
+    document.getElementById('uploadBtn').classList.remove('active');
+    const area = document.getElementById('resultArea');
+    area.style.display = 'block';
+    document.getElementById('againBtn').style.display = 'flex';
+
+    if (!result.valid) {
+      area.innerHTML = `
+        <div class="card">
+          <div class="banner bad">✗ Invalid credential</div>
+          <p style="color:var(--ink-dim);font-size:14px;line-height:1.6;">
+            This QR's data doesn't match its security hash — it may have been tampered with or corrupted. Don't trust this passport.
+          </p>
+        </div>`;
+      return;
+    }
+
+    const w = result.worker_data;
+    const skills = w.skills || [];
+    const levels = w.nsqf_levels || [];
+    const fraudClass = result.fraud_risk === 'high' ? 'bad' : result.fraud_risk === 'medium' ? 'brass' : 'good';
+
+    area.innerHTML = `
+      <div class="passport">
+        <div class="identity">
+          <div class="seal stamp"><span class="seal-mark">N</span></div>
+          <div>
+            <div class="name">${w.name}</div>
+            <div class="tag"><span class="dot"></span>NEEV Verified Worker</div>
+          </div>
+        </div>
+
+        <div class="eyebrow">Skills · NSQF mapping</div>
+        ${skills.map((s, i) => `
+          <div class="ledger-row">
+            <span class="ledger-skill">${s}</span>
+            <span class="pill level">Level ${levels[i] ?? 'N/A'}</span>
+          </div>`).join('')}
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-tile">
+          <div class="num">${result.trust_score}</div>
+          <div class="label">Trust score / 100</div>
+        </div>
+        <div class="stat-tile">
+          <div class="num" style="color:var(--${fraudClass === 'bad' ? 'bad' : fraudClass === 'brass' ? 'brass' : 'good'});">${result.fraud_risk}</div>
+          <div class="label">Fraud risk</div>
+        </div>
+      </div>
+
+      ${result.fraud_flags && result.fraud_flags.length ? `
+        <div class="card">
+          <div class="eyebrow">Flags raised</div>
+          ${result.fraud_flags.map(f => `<div style="font-size:13px;color:var(--bad);margin-bottom:6px;">⚠ ${f}</div>`).join('')}
+        </div>` : ''}
+
+      <div class="card">
+        <div class="eyebrow">Employer reviews (${result.employer_reviews_count})</div>
+        ${result.employer_reviews && result.employer_reviews.length ? result.employer_reviews.map(r => `
+          <div class="endorse-item">
+            <div class="who">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} <span class="role">${r.skill_level}</span></div>
+            <div class="cmt">${r.feedback}</div>
+          </div>`).join('') : `<div class="empty-state">No employer reviews yet</div>`}
+      </div>
+
+      <div class="card" id="endorsementsCard">
+        <div class="eyebrow">Community endorsements</div>
+        <div class="empty-state">Loading…</div>
+      </div>
+
+      <a class="btn btn-primary" href="review.html?worker=${encodeURIComponent(w.name)}">Leave a review for ${w.name}</a>
+    `;
+
+    loadEndorsements(w.name);
+  }
+
+  async function loadEndorsements(name) {
+    const card = document.getElementById('endorsementsCard');
+    try {
+      const res = await neevFetch(`/endorsements/${encodeURIComponent(name)}`);
+      if (!res.endorsement_count) {
+        card.innerHTML = `<div class="eyebrow">Community endorsements</div><div class="empty-state">No endorsements yet</div>`;
+        return;
+      }
+      card.innerHTML = `<div class="eyebrow">Community endorsements (${res.endorsement_count})</div>` +
+        res.endorsements.map(e => `
+          <div class="endorse-item">
+            <div class="who">${e.endorser_name} <span class="role">${e.endorser_role}</span></div>
+            <div class="dur">${e.relationship_duration}</div>
+            <div class="cmt">${e.comment}</div>
+          </div>`).join('');
+    } catch (err) {
+      card.innerHTML = `<div class="eyebrow">Community endorsements</div><div class="empty-state">Couldn't load endorsements</div>`;
+    }
+  }
+
+  function resetScanner() {
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('againBtn').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+  }
+</script>
+</body>
+</html>

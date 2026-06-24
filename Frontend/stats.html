@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Platform Stats</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="index.html" class="back-link">← Home</a>
+  </div>
+
+  <nav class="crumbs"><span class="on">Platform stats</span></nav>
+  <h1>Live across NEEV</h1>
+  <p class="lede">Real numbers, pulled straight from the backend right now.</p>
+
+  <div class="stat-grid" id="statGrid">
+    <div class="stat-tile"><div class="num">—</div><div class="label">Employer reviews</div></div>
+    <div class="stat-tile"><div class="num">—</div><div class="label">Verifications</div></div>
+    <div class="stat-tile"><div class="num">—</div><div class="label">Fraud cases flagged</div></div>
+    <div class="stat-tile"><div class="num">—</div><div class="label">Avg employer rating</div></div>
+  </div>
+
+  <div class="card" id="metaCard">
+    <div class="eyebrow">Status</div>
+    <div class="empty-state">Loading…</div>
+  </div>
+
+  <a class="btn btn-ghost" href="javascript:location.reload()">↻ Refresh</a>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  async function loadStats() {
+    const meta = document.getElementById('metaCard');
+    try {
+      const s = await neevFetch('/stats');
+      const tiles = document.querySelectorAll('#statGrid .num');
+      tiles[0].innerText = s.total_reviews;
+      tiles[1].innerText = s.total_verifications;
+      tiles[2].innerText = s.fraud_cases_detected;
+      tiles[3].innerText = s.average_employer_rating;
+
+      meta.innerHTML = `
+        <div class="eyebrow">Status</div>
+        <div class="ledger-row"><span class="ledger-skill">Platform</span><span class="pill brass">${s.platform}</span></div>
+        <div class="ledger-row"><span class="ledger-skill">Backend status</span><span class="pill good">${s.status}</span></div>`;
+    } catch (err) {
+      meta.innerHTML = `<div class="eyebrow">Status</div><div class="empty-state">Couldn't reach the backend. It may be waking up — try refreshing in a few seconds.</div>`;
+    }
+  }
+  loadStats();
+</script>
+</body>
+</html>

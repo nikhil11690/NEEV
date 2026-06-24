@@ -1,320 +1,139 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEEV — Confirm Skills</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 24px;
-    }
-
-    .back {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      color: #888;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .back:hover { color: #fff; }
-
-    h1 {
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .subtitle {
-      color: #888;
-      font-size: 14px;
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    .section-card {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 16px;
-      padding: 24px;
-      width: 100%;
-      max-width: 480px;
-      margin-bottom: 16px;
-    }
-
-    .section-label {
-      font-size: 11px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-
-    .transcript-text {
-      font-size: 14px;
-      color: #aaa;
-      line-height: 1.7;
-    }
-
-    .skills-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .skill-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #0f2419;
-      border: 1px solid #10b981;
-      color: #10b981;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-    }
-
-    .skill-chip.removed {
-      background: #1a1a1a;
-      border-color: #333;
-      color: #555;
-      text-decoration: line-through;
-    }
-
-    .remove-btn {
-      background: none;
-      border: none;
-      color: #10b981;
-      cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-    }
-
-    .skill-chip.removed .remove-btn {
-      color: #555;
-    }
-
-    .nsqf-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #222;
-      font-size: 13px;
-    }
-
-    .nsqf-row:last-child { border-bottom: none; }
-    .nsqf-row.removed { opacity: 0.3; }
-
-    .nsqf-skill { color: #ccc; }
-
-    .nsqf-right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .nsqf-level {
-      background: #1e1e2e;
-      border: 1px solid #4f46e5;
-      color: #818cf8;
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-
-    .nsqf-sector { color: #555; font-size: 12px; }
-
-    .confirm-btn {
-      width: 100%;
-      max-width: 480px;
-      padding: 14px;
-      background: #10b981;
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.2s;
-    }
-
-    .confirm-btn:hover { background: #059669; }
-    .confirm-btn:disabled { background: #1a3a2a; color: #555; cursor: not-allowed; }
-
-    .status {
-      font-size: 13px;
-      color: #f59e0b;
-      text-align: center;
-      margin-top: 12px;
-      min-height: 20px;
-    }
-
-    .worker-name-display {
-      font-size: 18px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-
-    .name-tag {
-      font-size: 12px;
-      color: #10b981;
-    }
-  </style>
+<title>NEEV — Confirm Skills</title>
+<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-  <a href="record.html" class="back">← Back</a>
-
-  <h1>Skills Confirm Karo</h1>
-  <p class="subtitle">Jo galat ho usse hatao, phir QR banao</p>
-
-  <div class="section-card">
-    <div class="section-label">Worker</div>
-    <div class="worker-name-display" id="workerName">—</div>
-    <div class="name-tag">✓ NEEV Skill Passport</div>
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="record.html" class="back-link">← Back</a>
   </div>
 
-  <div class="section-card">
-    <div class="section-label">Aapne Kya Bola (Transcript)</div>
-    <div class="transcript-text" id="transcriptText">—</div>
+  <nav class="crumbs">Worker <span class="sep">/</span> Record <span class="sep">/</span> <span class="on">Confirm</span> <span class="sep">/</span> Passport</nav>
+  <h1>Confirm your skills</h1>
+  <p class="lede">Here's what NEEV heard. Remove anything that's wrong, then generate your passport.</p>
+
+  <div class="card">
+    <div class="eyebrow">Worker</div>
+    <div class="identity" style="margin-bottom:0;">
+      <div>
+        <div class="name" id="workerName">—</div>
+        <div class="tag"><span class="dot"></span>Draft — not yet generated</div>
+      </div>
+    </div>
   </div>
 
-  <div class="section-card">
-    <div class="section-label">Extracted Skills — Galat ho toh ✕ dabao</div>
-    <div class="skills-grid" id="skillsGrid"></div>
+  <div class="card">
+    <div class="eyebrow">What you said</div>
+    <p style="font-size:14px;color:var(--ink-dim);line-height:1.7;" id="transcriptText">—</p>
   </div>
 
-  <div class="section-card">
-    <div class="section-label">NSQF Mapping</div>
+  <div class="card">
+    <div class="eyebrow">Extracted skills — tap ✕ to remove</div>
+    <div class="chips" id="skillsGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">NSQF mapping</div>
     <div id="nsqfList"></div>
   </div>
 
-  <button class="confirm-btn" id="confirmBtn" onclick="confirmSkills()">
-    Yeh Sahi Hai — QR Banao →
-  </button>
-  <div class="status" id="status"></div>
+  <button class="btn btn-good" id="confirmBtn" onclick="confirmSkills()">This looks right — generate passport →</button>
+  <div class="status-line" id="status"></div>
+</div>
 
-  <script>
-    const data = JSON.parse(sessionStorage.getItem('neev_process_result'));
+<script src="../js/api.js"></script>
+<script>
+  const data = JSON.parse(sessionStorage.getItem('neev_process_result') || 'null');
+  if (!data) window.location.href = 'record.html';
 
-    if (!data) {
-      window.location.href = 'record.html';
+  let removedIndices = new Set();
+
+  document.getElementById('workerName').innerText = data.name;
+  document.getElementById('transcriptText').innerText = data.transcript;
+
+  const grid = document.getElementById('skillsGrid');
+  data.skills.forEach((skill, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.id = `chip-${i}`;
+    chip.innerHTML = `<span>${skill}</span><button onclick="toggleSkill(${i})">✕</button>`;
+    grid.appendChild(chip);
+  });
+
+  const nsqfList = document.getElementById('nsqfList');
+  data.nsqf_mapping.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'ledger-row';
+    row.id = `nsqf-${i}`;
+    row.innerHTML = `
+      <span class="ledger-skill">${item.skill}</span>
+      <div class="ledger-right">
+        <span class="pill level">Level ${item.nsqf_level}</span>
+        <span class="pill">${item.sector}</span>
+      </div>`;
+    nsqfList.appendChild(row);
+  });
+
+  function toggleSkill(i) {
+    const chip = document.getElementById(`chip-${i}`);
+    const row = document.getElementById(`nsqf-${i}`);
+    if (removedIndices.has(i)) {
+      removedIndices.delete(i);
+      chip.classList.remove('removed');
+      row.classList.remove('muted');
+    } else {
+      removedIndices.add(i);
+      chip.classList.add('removed');
+      row.classList.add('muted');
     }
+    document.getElementById('confirmBtn').disabled = removedIndices.size === data.skills.length;
+  }
 
-    let removedIndices = new Set();
-
-    // Worker name
-    document.getElementById('workerName').innerText = data.name;
-
-    // Transcript
-    document.getElementById('transcriptText').innerText = data.transcript;
-
-    // Skills chips
-    const grid = document.getElementById('skillsGrid');
-    data.skills.forEach((skill, i) => {
-      const chip = document.createElement('div');
-      chip.className = 'skill-chip';
-      chip.id = `chip-${i}`;
-      chip.innerHTML = `
-        <span>${skill}</span>
-        <button class="remove-btn" onclick="toggleSkill(${i})">✕</button>`;
-      grid.appendChild(chip);
-    });
-
-    // NSQF list
-    const nsqfList = document.getElementById('nsqfList');
+  async function confirmSkills() {
+    const confirmedSkills = [];
+    const confirmedLevels = [];
     data.nsqf_mapping.forEach((item, i) => {
-      const row = document.createElement('div');
-      row.className = 'nsqf-row';
-      row.id = `nsqf-${i}`;
-      row.innerHTML = `
-        <span class="nsqf-skill">${item.skill}</span>
-        <div class="nsqf-right">
-          <span class="nsqf-level">Level ${item.nsqf_level}</span>
-          <span class="nsqf-sector">${item.sector}</span>
-        </div>`;
-      nsqfList.appendChild(row);
+      if (!removedIndices.has(i)) {
+        confirmedSkills.push(item.skill);
+        confirmedLevels.push(item.nsqf_level === 'N/A' ? 0 : item.nsqf_level);
+      }
     });
 
-    function toggleSkill(i) {
-      const chip = document.getElementById(`chip-${i}`);
-      const nsqfRow = document.getElementById(`nsqf-${i}`);
+    setStatus('Generating your QR passport…', '');
+    document.getElementById('confirmBtn').disabled = true;
 
-      if (removedIndices.has(i)) {
-        removedIndices.delete(i);
-        chip.classList.remove('removed');
-        nsqfRow.classList.remove('removed');
-      } else {
-        removedIndices.add(i);
-        chip.classList.add('removed');
-        nsqfRow.classList.add('removed');
-      }
-
-      // Disable confirm if all skills removed
-      const confirmBtn = document.getElementById('confirmBtn');
-      confirmBtn.disabled = removedIndices.size === data.skills.length;
-    }
-
-    async function confirmSkills() {
-      // Filter out removed skills
-      const confirmedSkills = [];
-      const confirmedLevels = [];
-
-      data.nsqf_mapping.forEach((item, i) => {
-        if (!removedIndices.has(i)) {
-          confirmedSkills.push(item.skill);
-          confirmedLevels.push(item.nsqf_level === 'N/A' ? 0 : item.nsqf_level);
-        }
+    try {
+      const result = await neevFetch('/generate-credential', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: data.name, skills: confirmedSkills, nsqf_levels: confirmedLevels })
       });
 
-      document.getElementById('status').innerText = 'QR ban raha hai... thoda wait karo';
-      document.getElementById('confirmBtn').disabled = true;
+      sessionStorage.setItem('neev_result', JSON.stringify({
+        name: data.name,
+        skills: confirmedSkills,
+        nsqf_mapping: data.nsqf_mapping.filter((_, i) => !removedIndices.has(i)),
+        hash: result.hash,
+        qr_code_base64: result.qr_code_base64
+      }));
 
-      try {
-        const response = await fetch('https://neev-1.onrender.com/generate-credential', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: data.name,
-            skills: confirmedSkills,
-            nsqf_levels: confirmedLevels
-          })
-        });
-
-        const result = await response.json();
-
-        // Save final result and go to credential page
-        sessionStorage.setItem('neev_result', JSON.stringify({
-          name: data.name,
-          skills: confirmedSkills,
-          nsqf_mapping: data.nsqf_mapping.filter((_, i) => !removedIndices.has(i)),
-          hash: result.hash,
-          qr_code_base64: result.qr_code_base64
-        }));
-
-        window.location.href = 'credential.html';
-
-      } catch (err) {
-        document.getElementById('status').innerText = 'Error aaya. Backend chalu hai?';
-        document.getElementById('confirmBtn').disabled = false;
-      }
+      window.location.href = 'credential.html';
+    } catch (err) {
+      setStatus('Error aaya. Backend chalu hai?', 'error');
+      document.getElementById('confirmBtn').disabled = false;
     }
-  </script>
+  }
 
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+</script>
 </body>
 </html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Endorse a Worker</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="../index.html" class="back-link">← Home</a>
+  </div>
+
+  <nav class="crumbs">Community <span class="sep">/</span> <span class="on">Endorse</span></nav>
+  <h1>Vouch for a worker</h1>
+  <p class="lede">Worked alongside someone genuine? A contractor, supervisor, or co-worker's word carries real weight on NEEV.</p>
+
+  <div class="card">
+    <div class="field">
+      <label>Worker's name</label>
+      <input type="text" id="workerName" placeholder="e.g. Raju Kumar" />
+    </div>
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" id="endorserName" placeholder="e.g. Suresh Contractor" />
+    </div>
+    <div class="field">
+      <label>Your relationship to them</label>
+      <select id="endorserRole">
+        <option value="contractor">Contractor</option>
+        <option value="supervisor">Supervisor</option>
+        <option value="co-worker">Co-worker</option>
+        <option value="client">Client</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>How long have you known their work?</label>
+      <input type="text" id="duration" placeholder="e.g. 2 years" />
+    </div>
+    <div class="field" style="margin-bottom:0;">
+      <label>Your endorsement</label>
+      <textarea id="comment" placeholder="e.g. Raju ne mere 3 sites pe wiring ka kaam kiya, bahut reliable hai"></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-good" id="submitBtn" onclick="submitEndorsement()">Submit endorsement</button>
+  <div class="status-line" id="status"></div>
+
+  <div class="eyebrow" style="margin-top:36px;">Look up a worker's endorsements</div>
+  <div class="card" style="display:flex;gap:10px;align-items:flex-start;">
+    <input type="text" id="lookupName" placeholder="Worker's name" style="flex:1;padding:13px 15px;background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:14.5px;" />
+    <button class="btn btn-ghost" style="width:auto;padding:13px 18px;" onclick="lookupEndorsements()">Look up</button>
+  </div>
+  <div id="lookupResult"></div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function submitEndorsement() {
+    const worker_name = document.getElementById('workerName').value.trim();
+    const endorser_name = document.getElementById('endorserName').value.trim();
+    const endorser_role = document.getElementById('endorserRole').value;
+    const relationship_duration = document.getElementById('duration').value.trim();
+    const comment = document.getElementById('comment').value.trim();
+
+    if (!worker_name || !endorser_name || !comment) {
+      return setStatus('Worker name, your name, aur comment zaroori hai.', 'error');
+    }
+
+    setStatus('Submitting…', '');
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+      await neevFetch('/community-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ worker_name, endorser_name, endorser_role, relationship_duration, comment })
+      });
+      setStatus('✓ Endorsement added — thank you for vouching.', 'success');
+      document.getElementById('submitBtn').innerText = 'Submitted ✓';
+    } catch (err) {
+      setStatus('Could not submit — try again in a moment.', 'error');
+      document.getElementById('submitBtn').disabled = false;
+    }
+  }
+
+  async function lookupEndorsements() {
+    const name = document.getElementById('lookupName').value.trim();
+    const out = document.getElementById('lookupResult');
+    if (!name) return;
+    out.innerHTML = `<div class="empty-state">Loading…</div>`;
+    try {
+      const res = await neevFetch(`/endorsements/${encodeURIComponent(name)}`);
+      if (!res.endorsement_count) {
+        out.innerHTML = `<div class="empty-state">No endorsements yet for ${name}</div>`;
+        return;
+      }
+      out.innerHTML = `<div class="card"><div class="eyebrow">${res.endorsement_count} endorsement(s) for ${name}</div>` +
+        res.endorsements.map(e => `
+          <div class="endorse-item">
+            <div class="who">${e.endorser_name} <span class="role">${e.endorser_role}</span></div>
+            <div class="dur">${e.relationship_duration}</div>
+            <div class="cmt">${e.comment}</div>
+          </div>`).join('') + `</div>`;
+    } catch (err) {
+      out.innerHTML = `<div class="empty-state">Couldn't load endorsements right now</div>`;
+    }
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+</script>
+</body>
+</html>

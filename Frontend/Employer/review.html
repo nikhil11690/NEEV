@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Leave a Review</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="verify.html" class="back-link">← Back</a>
+  </div>
+
+  <nav class="crumbs">Employer <span class="sep">/</span> <span class="on">Review</span></nav>
+  <h1>Leave a review</h1>
+  <p class="lede">Your honest rating helps build this worker's trust score and protects other employers from fraud.</p>
+
+  <div class="card">
+    <div class="field">
+      <label>Worker's name</label>
+      <input type="text" id="workerName" placeholder="e.g. Raju Kumar" />
+    </div>
+
+    <div class="field">
+      <label>Rating</label>
+      <div class="stars" id="stars">
+        <button data-v="1" onclick="setRating(1)">★</button>
+        <button data-v="2" onclick="setRating(2)">★</button>
+        <button data-v="3" onclick="setRating(3)">★</button>
+        <button data-v="4" onclick="setRating(4)">★</button>
+        <button data-v="5" onclick="setRating(5)">★</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Skill level shown on the job</label>
+      <select id="skillLevel">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate" selected>Intermediate</option>
+        <option value="expert">Expert</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Years of experience they claimed</label>
+      <input type="number" id="claimedYears" min="0" placeholder="e.g. 5" />
+    </div>
+
+    <div class="field" style="margin-bottom:0;">
+      <label>Feedback</label>
+      <textarea id="feedback" placeholder="What was it like working with them?"></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="submitBtn" onclick="submitReview()">Submit review</button>
+  <div class="status-line" id="status"></div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('worker')) document.getElementById('workerName').value = params.get('worker');
+
+  let rating = 0;
+  function setRating(v) {
+    rating = v;
+    document.querySelectorAll('#stars button').forEach(b => {
+      b.classList.toggle('on', Number(b.dataset.v) <= v);
+    });
+  }
+
+  async function submitReview() {
+    const worker_name = document.getElementById('workerName').value.trim();
+    const feedback = document.getElementById('feedback').value.trim();
+    const skill_level = document.getElementById('skillLevel').value;
+    const claimed_experience_years = Number(document.getElementById('claimedYears').value || 0);
+
+    if (!worker_name) return setStatus('Worker ka naam likho.', 'error');
+    if (!rating) return setStatus('Rating select karo.', 'error');
+
+    setStatus('Submitting…', '');
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+      await neevFetch('/add-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ worker_name, rating, feedback, skill_level, claimed_experience_years })
+      });
+      setStatus('✓ Review submitted. Thanks for keeping NEEV honest.', 'success');
+      document.getElementById('submitBtn').innerText = 'Review submitted ✓';
+    } catch (err) {
+      setStatus('Could not submit — try again in a moment.', 'error');
+      document.getElementById('submitBtn').disabled = false;
+    }
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+</script>
+</body>
+</html>

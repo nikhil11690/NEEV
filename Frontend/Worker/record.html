@@ -1,244 +1,111 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEEV — Record Skills</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .back {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      color: #888;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .back:hover { color: #fff; }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .subtitle {
-      color: #888;
-      font-size: 14px;
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    .input-group {
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 24px;
-    }
-
-    label {
-      font-size: 13px;
-      color: #888;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 16px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 15px;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: #10b981;
-    }
-
-    .mic-btn {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: #10b981;
-      border: none;
-      cursor: pointer;
-      font-size: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 24px;
-      transition: all 0.2s;
-    }
-
-    .mic-btn:hover { background: #059669; transform: scale(1.05); }
-    .mic-btn.recording { background: #ef4444; animation: pulse 1s infinite; }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-
-    .status {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 24px;
-      text-align: center;
-      min-height: 20px;
-    }
-
-    .status.recording { color: #ef4444; }
-    .status.processing { color: #f59e0b; }
-    .status.done { color: #10b981; }
-
-    .submit-btn {
-      width: 100%;
-      max-width: 400px;
-      padding: 14px;
-      background: #4f46e5;
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: none;
-      transition: background 0.2s;
-    }
-
-    .submit-btn:hover { background: #4338ca; }
-
-    .instruction {
-      font-size: 13px;
-      color: #555;
-      text-align: center;
-      margin-top: 16px;
-      max-width: 320px;
-      line-height: 1.6;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Record Your Skills</title>
+<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-  <a href="../index.html" class="back">← Back</a>
-
-  <h1>Apna Skill Batao</h1>
-  <p class="subtitle">Mic dabao aur apna kaam bolo</p>
-
-  <div class="input-group">
-    <label>Aapka Naam</label>
-    <input type="text" id="workerName" placeholder="Jaise: Raju Kumar" />
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="../index.html" class="back-link">← Home</a>
   </div>
 
-  <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎙️</button>
-  <div class="status" id="status">Mic dabao recording shuru karne ke liye</div>
+  <nav class="crumbs">Worker <span class="sep">/</span> <span class="on">Record</span> <span class="sep">/</span> Confirm <span class="sep">/</span> Passport</nav>
+  <h1>Speak your skills</h1>
+  <p class="lede">Say your name, then describe the work you do. NEEV will listen, extract your skills, and map them to NSQF levels.</p>
 
-  <button class="submit-btn" id="submitBtn" onclick="submitAudio()">
-    Skill Passport Banao →
+  <div class="field">
+    <label>Your name</label>
+    <input type="text" id="workerName" placeholder="e.g. Raju Kumar" />
+  </div>
+
+  <div class="mic-wrap">
+    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎙️</button>
+  </div>
+  <div class="status-line" id="status">Tap the mic to start recording</div>
+
+  <button class="btn btn-good" id="submitBtn" style="display:none;margin-top:18px;" onclick="submitAudio()">
+    Generate skill draft →
   </button>
 
-  <p class="instruction">
-    Apna kaam batao — jaise "Main 5 saal se plastering aur painting karta hoon"
+  <p class="footer-note" style="margin-top:24px;max-width:380px;margin-left:auto;margin-right:auto;">
+    Example: "Main 5 saal se plastering aur painting karta hoon, electrical ka bhi kaam aata hai."
   </p>
+</div>
 
-  <script>
-    let mediaRecorder;
-    let audioChunks = [];
-    let audioBlob = null;
-    let isRecording = false;
+<script src="../js/api.js"></script>
+<script>
+  let mediaRecorder, audioChunks = [], audioBlob = null, isRecording = false;
 
-    async function toggleRecording() {
-      if (!isRecording) {
-        // Start recording
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          document.getElementById('submitBtn').style.display = 'block';
-          setStatus('Recording ready! Skill Passport banao.', 'done');
-        };
-
-        mediaRecorder.start();
-        isRecording = true;
-        document.getElementById('micBtn').classList.add('recording');
-        document.getElementById('micBtn').innerText = '⏹️';
-        setStatus('Recording... Roko jab ho jao', 'recording');
-
-      } else {
-        // Stop recording
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-        isRecording = false;
-        document.getElementById('micBtn').classList.remove('recording');
-        document.getElementById('micBtn').innerText = '🎙️';
-      }
-    }
-
-    async function submitAudio() {
-      const name = document.getElementById('workerName').value.trim();
-      if (!name) {
-        alert('Pehle apna naam likho!');
-        return;
-      }
-      if (!audioBlob) {
-        alert('Pehle recording karo!');
-        return;
-      }
-
-      setStatus('Processing... thoda wait karo', 'processing');
-      document.getElementById('submitBtn').disabled = true;
-
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-
+  async function toggleRecording() {
+    if (!isRecording) {
+      let stream;
       try {
-        const response = await fetch(`https://neev-1.onrender.com/process?name=${encodeURIComponent(name)}`, {
-          method: 'POST',
-          body: formData
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        setStatus('Mic access nahi mila. Browser permissions check karo.', 'error');
+        return;
+      }
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        document.getElementById('submitBtn').style.display = 'flex';
+        setStatus('Recording ready. Generate your skill draft below.', 'success');
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('micBtn').classList.add('recording');
+      document.getElementById('micBtn').innerText = '⏹️';
+      setStatus('Recording… tap again to stop', '');
+    } else {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      isRecording = false;
+      document.getElementById('micBtn').classList.remove('recording');
+      document.getElementById('micBtn').innerText = '🎙️';
+    }
+  }
 
-        const data = await response.json();
+  async function submitAudio() {
+    const name = document.getElementById('workerName').value.trim();
+    if (!name) { setStatus('Pehle apna naam likho.', 'error'); return; }
+    if (!audioBlob) { setStatus('Pehle recording karo.', 'error'); return; }
 
-        if (data.success) {
-          // Save result to sessionStorage and go to credential page
-          sessionStorage.setItem('neev_process_result', JSON.stringify(data));
-          window.location.href = 'confirm.html';
-        } else {
-          setStatus('Kuch error aaya. Dobara try karo.', '');
-          document.getElementById('submitBtn').disabled = false;
-        }
+    setStatus('Processing your recording…', '');
+    document.getElementById('submitBtn').disabled = true;
 
-      } catch (err) {
-        setStatus('Server se connect nahi ho paya. Backend chalu hai?', '');
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+
+    try {
+      const res = await fetch(`${NEEV_API}/process?name=${encodeURIComponent(name)}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        sessionStorage.setItem('neev_process_result', JSON.stringify(data));
+        window.location.href = 'confirm.html';
+      } else {
+        setStatus('Kuch error aaya. Dobara try karo.', 'error');
         document.getElementById('submitBtn').disabled = false;
       }
+    } catch (err) {
+      setStatus('Server se connect nahi ho paya. Thodi der baad try karo (server wake up ho raha ho sakta hai).', 'error');
+      document.getElementById('submitBtn').disabled = false;
     }
+  }
 
-    function setStatus(msg, type) {
-      const el = document.getElementById('status');
-      el.innerText = msg;
-      el.className = 'status ' + type;
-    }
-  </script>
-
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+</script>
 </body>
 </html>

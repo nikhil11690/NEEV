@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Skill Interview</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
+    <a href="record.html" class="back-link">← Back</a>
+  </div>
+
+  <nav class="crumbs">Worker <span class="sep">/</span> <span class="on">AI Interview</span></nav>
+  <h1>Prove a skill, live</h1>
+  <p class="lede">Pick a skill. NEEV's AI interviewer will ask a real-world question — answer it out loud and get scored on the spot.</p>
+
+  <!-- Step 1: pick skill -->
+  <div class="card" id="skillCard">
+    <div class="field" style="margin-bottom:14px;">
+      <label>Skill to validate</label>
+      <input type="text" id="skillInput" placeholder="e.g. plastering, wiring, tailoring" />
+    </div>
+    <div class="field" style="margin-bottom:0;">
+      <label>Question language</label>
+      <select id="langSelect">
+        <option value="hi" selected>Hindi</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="genBtn" onclick="generateQuestion()">Generate question →</button>
+  <div class="status-line" id="genStatus"></div>
+
+  <!-- Step 2: question + record answer -->
+  <div id="questionArea" style="display:none;margin-top:8px;">
+    <div class="eyebrow" style="margin-top:30px;">Question</div>
+    <div class="card">
+      <p style="font-size:15.5px;font-family:var(--display);line-height:1.6;" id="questionText">—</p>
+    </div>
+
+    <div class="mic-wrap">
+      <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎙️</button>
+    </div>
+    <div class="status-line" id="recStatus">Tap the mic and answer out loud</div>
+
+    <button class="btn btn-good" id="submitBtn" style="display:none;margin-top:10px;" onclick="submitAnswer()">
+      Submit answer for evaluation →
+    </button>
+  </div>
+
+  <!-- Step 3: result -->
+  <div id="resultArea" style="display:none;margin-top:8px;"></div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  let currentSkill = '', currentQuestion = '';
+  let mediaRecorder, audioChunks = [], audioBlob = null, isRecording = false;
+
+  async function generateQuestion() {
+    currentSkill = document.getElementById('skillInput').value.trim();
+    const language = document.getElementById('langSelect').value;
+    if (!currentSkill) return setGenStatus('Pehle skill likho.', 'error');
+
+    setGenStatus('Generating question…', '');
+    document.getElementById('genBtn').disabled = true;
+
+    try {
+      const res = await neevFetch('/generate-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill: currentSkill, language })
+      });
+      currentQuestion = res.question;
+      document.getElementById('questionText').innerText = currentQuestion;
+      document.getElementById('questionArea').style.display = 'block';
+      document.getElementById('skillCard').style.opacity = '0.5';
+      document.getElementById('genBtn').style.display = 'none';
+      setGenStatus('', '');
+    } catch (err) {
+      setGenStatus('Could not generate a question — server may be waking up, try again.', 'error');
+      document.getElementById('genBtn').disabled = false;
+    }
+  }
+
+  async function toggleRecording() {
+    if (!isRecording) {
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        setRecStatus('Mic access nahi mila.', 'error');
+        return;
+      }
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        document.getElementById('submitBtn').style.display = 'flex';
+        setRecStatus('Answer recorded. Submit when ready.', 'success');
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('micBtn').classList.add('recording');
+      document.getElementById('micBtn').innerText = '⏹️';
+      setRecStatus('Recording your answer…', '');
+    } else {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      isRecording = false;
+      document.getElementById('micBtn').classList.remove('recording');
+      document.getElementById('micBtn').innerText = '🎙️';
+    }
+  }
+
+  async function submitAnswer() {
+    if (!audioBlob) return setRecStatus('Pehle recording karo.', 'error');
+
+    setRecStatus('Evaluating your answer…', '');
+    document.getElementById('submitBtn').disabled = true;
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'answer.webm');
+
+    const qs = new URLSearchParams({ skill: currentSkill, question: currentQuestion });
+
+    try {
+      const res = await fetch(`${NEEV_API}/validate-answer?${qs.toString()}`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('bad response');
+      const data = await res.json();
+      showResult(data);
+    } catch (err) {
+      setRecStatus('Evaluation failed — try again in a moment.', 'error');
+      document.getElementById('submitBtn').disabled = false;
+    }
+  }
+
+  function showResult(data) {
+    document.getElementById('questionArea').style.display = 'none';
+    const area = document.getElementById('resultArea');
+    area.style.display = 'block';
+
+    const badgeClass = data.verified ? 'good' : 'bad';
+    const levelClass = data.level === 'expert' ? 'good' : data.level === 'intermediate' ? 'brass' : 'bad';
+
+    area.innerHTML = `
+      <div class="banner ${badgeClass}">${data.verified ? '✓ Skill verified' : '✗ Not verified yet'}</div>
+      <div class="passport">
+        <div class="identity">
+          <div class="seal stamp"><span class="seal-mark">${Math.round(data.confidence_score)}</span></div>
+          <div>
+            <div class="name" style="font-size:18px;">${data.skill}</div>
+            <div class="tag" style="color:var(--ink-dim);"><span class="dot" style="background:var(--ink-dim);"></span>Confidence score / 100</div>
+          </div>
+        </div>
+
+        <div class="eyebrow">Question asked</div>
+        <p style="font-size:13.5px;color:var(--ink-dim);margin-bottom:18px;line-height:1.6;">${data.question}</p>
+
+        <div class="eyebrow">What you said</div>
+        <p style="font-size:13.5px;color:var(--ink-dim);margin-bottom:18px;line-height:1.6;">${data.worker_answer}</p>
+
+        <div class="ledger-row">
+          <span class="ledger-skill">Assessed level</span>
+          <span class="pill ${levelClass}">${data.level}</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">AI feedback</div>
+        <p style="font-size:14px;color:var(--ink-dim);line-height:1.6;">${data.feedback}</p>
+      </div>
+
+      <a class="btn btn-ghost" href="interview.html">Try another skill</a>
+    `;
+  }
+
+  function setGenStatus(msg, type) {
+    const el = document.getElementById('genStatus');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+  function setRecStatus(msg, type) {
+    const el = document.getElementById('recStatus');
+    el.innerText = msg;
+    el.className = 'status-line ' + type;
+  }
+</script>
+</body>
+</html>
