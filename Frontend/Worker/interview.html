@@ -117,7 +117,7 @@
     }
   }
 
-  async function submitAnswer() {
+ async function submitAnswer() {
     if (!audioBlob) return setRecStatus('Pehle recording karo.', 'error');
 
     setRecStatus('Evaluating your answer…', '');
@@ -136,10 +136,27 @@
       if (!res.ok) throw new Error('bad response');
       const data = await res.json();
 
-      // ✅ FIX: interview complete karo backend mein
-      await markInterviewComplete(data.confidence_score);
+      // Interview complete mark karo backend mein
+      const worker_id = new URLSearchParams(window.location.search).get('worker_id') ||
+                        sessionStorage.getItem('neev_worker_id');
+      if (worker_id) {
+        try {
+          await fetch(`${NEEV_API}/complete-interview?worker_id=${encodeURIComponent(worker_id)}&ai_score=${data.confidence_score}`, {
+            method: 'POST'
+          });
+          // Session update karo
+          const cred = JSON.parse(sessionStorage.getItem('neev_credential') || '{}');
+          cred.interview_completed = true;
+          cred.ai_validation_score = data.confidence_score;
+          cred.trust_score = data.confidence_score;
+          sessionStorage.setItem('neev_credential', JSON.stringify(cred));
+        } catch(e) {
+          console.log('Interview mark failed:', e);
+        }
+      }
 
       showResult(data);
+
     } catch (err) {
       setRecStatus('Evaluation failed — try again in a moment.', 'error');
       document.getElementById('submitBtn').disabled = false;
