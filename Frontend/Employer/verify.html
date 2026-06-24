@@ -120,13 +120,11 @@
   }
 
   async function processQRData(rawData) {
-    let parsed;
-    try { parsed = JSON.parse(rawData); } catch (e) { alert('Invalid QR data.'); return; }
     try {
       const result = await neevFetch('/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: parsed.data, hash: parsed.hash })
+        body: JSON.stringify({ worker_id: rawData.trim() })
       });
       await showResult(result);
     } catch (err) {
