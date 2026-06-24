@@ -1,107 +1,201 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>NEEV — Leave a Review</title>
+<title>NEEV — Employer Review</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 <div class="shell">
   <div class="topbar">
     <a href="../index.html" class="brandmark"><span class="seal-dot"></span>NEEV</a>
-    <a href="verify.html" class="back-link">← Back</a>
+    <a href="../index.html" class="back-link">← Home</a>
   </div>
+  <nav class="crumbs">Employer <span class="sep">/</span> <span class="on">Submit Review</span></nav>
 
-  <nav class="crumbs">Employer <span class="sep">/</span> <span class="on">Review</span></nav>
-  <h1>Leave a review</h1>
-  <p class="lede">Your honest rating helps build this worker's trust score and protects other employers from fraud.</p>
+  <h1>Worker ka review do</h1>
+  <p class="lede">Tune kisi worker ko hire kiya tha? Yeh 4 sawaal bharo — isse unka trust score update hoga aur dusre employers ko sahi choice karne mein madad milegi.</p>
 
   <div class="card">
     <div class="field">
-      <label>Worker's name</label>
-      <input type="text" id="workerName" placeholder="e.g. Raju Kumar" />
+      <label>Worker ka naam</label>
+      <input type="text" id="workerName" placeholder="Jaise: Ramesh Kumar"/>
     </div>
-
     <div class="field">
-      <label>Rating</label>
-      <div class="stars" id="stars">
-        <button data-v="1" onclick="setRating(1)">★</button>
-        <button data-v="2" onclick="setRating(2)">★</button>
-        <button data-v="3" onclick="setRating(3)">★</button>
-        <button data-v="4" onclick="setRating(4)">★</button>
-        <button data-v="5" onclick="setRating(5)">★</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Skill level shown on the job</label>
-      <select id="skillLevel">
-        <option value="beginner">Beginner</option>
-        <option value="intermediate" selected>Intermediate</option>
-        <option value="expert">Expert</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Years of experience they claimed</label>
-      <input type="number" id="claimedYears" min="0" placeholder="e.g. 5" />
-    </div>
-
-    <div class="field" style="margin-bottom:0;">
-      <label>Feedback</label>
-      <textarea id="feedback" placeholder="What was it like working with them?"></textarea>
+      <label>Tumhara naam / Company</label>
+      <input type="text" id="employerName" placeholder="Jaise: Sharma Constructions"/>
     </div>
   </div>
 
-  <button class="btn btn-primary" id="submitBtn" onclick="submitReview()">Submit review</button>
-  <div class="status-line" id="status"></div>
+  <!-- Q1 -->
+  <div class="card">
+    <div class="eyebrow">Sawaal 1 / 4</div>
+    <p style="font-size:15px;font-family:var(--display);margin-bottom:16px;">Is worker se tumhara kaam kitna santushti se hua?</p>
+    <div class="star-row" id="q1Stars">
+      <button class="star-btn" data-q="q1" data-val="1" onclick="setRating('q1',1)">★</button>
+      <button class="star-btn" data-q="q1" data-val="2" onclick="setRating('q1',2)">★</button>
+      <button class="star-btn" data-q="q1" data-val="3" onclick="setRating('q1',3)">★</button>
+      <button class="star-btn" data-q="q1" data-val="4" onclick="setRating('q1',4)">★</button>
+      <button class="star-btn" data-q="q1" data-val="5" onclick="setRating('q1',5)">★</button>
+    </div>
+    <div class="rating-label" id="q1Label">Tap to rate</div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="card">
+    <div class="eyebrow">Sawaal 2 / 4</div>
+    <p style="font-size:15px;font-family:var(--display);margin-bottom:12px;">Koi unexpected situation aayi toh worker ne kaise handle kiya?</p>
+    <div class="mcq-options" id="q2Options">
+      <button class="mcq-btn" onclick="setMCQ('q2', 'Bohot achhe se handle kiya')">🟢 Bohot achhe se handle kiya</button>
+      <button class="mcq-btn" onclick="setMCQ('q2', 'Theek-thaak handle kiya')">🟡 Theek-thaak handle kiya</button>
+      <button class="mcq-btn" onclick="setMCQ('q2', 'Kuch pareshani aayi par sambhal liya')">🟠 Kuch pareshani aayi par sambhal liya</button>
+      <button class="mcq-btn" onclick="setMCQ('q2', 'Handle nahi kar paya / Koi unexpected situation nahi aayi')">🔴 Handle nahi kar paya</button>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="card">
+    <div class="eyebrow">Sawaal 3 / 4</div>
+    <p style="font-size:15px;font-family:var(--display);margin-bottom:12px;">Kya tum is worker ko dobara hire karoge?</p>
+    <div style="display:flex;gap:12px;">
+      <button class="mcq-btn rehire-btn" id="rehireYes" onclick="setRehire(true)">✅ Haan, zaroor</button>
+      <button class="mcq-btn rehire-btn" id="rehireNo" onclick="setRehire(false)">❌ Nahi</button>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="card">
+    <div class="eyebrow">Sawaal 4 / 4</div>
+    <p style="font-size:15px;font-family:var(--display);margin-bottom:16px;">Worker ki skills unke claims se kitni match karti thi?</p>
+    <div class="star-row" id="q4Stars">
+      <button class="star-btn" data-q="q4" data-val="1" onclick="setRating('q4',1)">★</button>
+      <button class="star-btn" data-q="q4" data-val="2" onclick="setRating('q4',2)">★</button>
+      <button class="star-btn" data-q="q4" data-val="3" onclick="setRating('q4',3)">★</button>
+      <button class="star-btn" data-q="q4" data-val="4" onclick="setRating('q4',4)">★</button>
+      <button class="star-btn" data-q="q4" data-val="5" onclick="setRating('q4',5)">★</button>
+    </div>
+    <div class="rating-label" id="q4Label">Tap to rate</div>
+  </div>
+
+  <button class="btn btn-primary" id="submitBtn" onclick="submitReview()">Review submit karo →</button>
+  <div class="status-line" id="submitStatus"></div>
+
+  <!-- Result -->
+  <div id="resultArea" style="display:none;margin-top:16px;"></div>
 </div>
 
 <script src="../js/api.js"></script>
 <script>
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('worker')) document.getElementById('workerName').value = params.get('worker');
+const BACKEND = window.NEEV_API || 'https://neev-1.onrender.com';
 
-  let rating = 0;
-  function setRating(v) {
-    rating = v;
-    document.querySelectorAll('#stars button').forEach(b => {
-      b.classList.toggle('on', Number(b.dataset.v) <= v);
+const state = { q1: null, q2: null, q3: null, q4: null };
+
+const q1Labels = ['', 'Bilkul nahi', 'Theek-thaak', 'Average', 'Achha', 'Bohot achha'];
+const q4Labels = ['', 'Bilkul match nahi', 'Kam match ki', 'Theek-thaak', 'Zyada match ki', 'Bilkul sahi thi'];
+
+function setRating(q, val) {
+  state[q] = val;
+  const stars = document.querySelectorAll(`.star-btn[data-q="${q}"]`);
+  stars.forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+  });
+  const labels = q === 'q1' ? q1Labels : q4Labels;
+  document.getElementById(`${q}Label`).innerText = labels[val];
+}
+
+function setMCQ(q, val) {
+  state[q] = val;
+  document.querySelectorAll('#q2Options .mcq-btn').forEach(b => {
+    b.classList.toggle('selected', b.innerText.includes(val.substring(3, 15)));
+  });
+}
+
+function setRehire(val) {
+  state.q3 = val;
+  document.getElementById('rehireYes').classList.toggle('selected', val === true);
+  document.getElementById('rehireNo').classList.toggle('selected', val === false);
+}
+
+async function submitReview() {
+  const workerName = document.getElementById('workerName').value.trim();
+  const employerName = document.getElementById('employerName').value.trim();
+
+  if (!workerName || !employerName) return setStatus('Worker aur employer ka naam bharo.', 'error');
+  if (!state.q1) return setStatus('Sawaal 1 ka jawab do (satisfaction rating).', 'error');
+  if (!state.q2) return setStatus('Sawaal 2 ka jawab do (unexpected handling).', 'error');
+  if (state.q3 === null) return setStatus('Sawaal 3 ka jawab do (rehire).', 'error');
+  if (!state.q4) return setStatus('Sawaal 4 ka jawab do (skill accuracy).', 'error');
+
+  document.getElementById('submitBtn').disabled = true;
+  setStatus('Submit ho raha hai…', '');
+
+  try {
+    const res = await fetch(`${BACKEND}/employer-mcq`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        worker_name: workerName,
+        employer_name: employerName,
+        q1_satisfaction: state.q1,
+        q2_unexpected: state.q2,
+        q3_would_rehire: state.q3,
+        q4_skill_accuracy: state.q4
+      })
     });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed');
+
+    setStatus('', '');
+    document.getElementById('resultArea').style.display = 'block';
+    document.getElementById('resultArea').innerHTML = `
+      <div class="banner good">✓ Review submit ho gaya</div>
+      <div class="passport">
+        <div class="identity">
+          <div class="seal stamp good"><span class="seal-mark">${Math.round(data.new_trust_score)}</span></div>
+          <div>
+            <div class="name">${workerName}</div>
+            <div class="tag" style="color:var(--ink-dim);">Updated Trust Score</div>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-skill">Kul reviews</span>
+          <span class="pill good">${data.total_mcq_reviews}</span>
+        </div>
+      </div>
+      <a href="../index.html" class="btn btn-ghost" style="margin-top:8px;">← Home</a>
+    `;
+  } catch(e) {
+    setStatus('Submit nahi hua — ' + e.message, 'error');
+    document.getElementById('submitBtn').disabled = false;
   }
+}
 
-  async function submitReview() {
-    const worker_name = document.getElementById('workerName').value.trim();
-    const feedback = document.getElementById('feedback').value.trim();
-    const skill_level = document.getElementById('skillLevel').value;
-    const claimed_experience_years = Number(document.getElementById('claimedYears').value || 0);
-
-    if (!worker_name) return setStatus('Worker ka naam likho.', 'error');
-    if (!rating) return setStatus('Rating select karo.', 'error');
-
-    setStatus('Submitting…', '');
-    document.getElementById('submitBtn').disabled = true;
-
-    try {
-      await neevFetch('/add-review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ worker_name, rating, feedback, skill_level, claimed_experience_years })
-      });
-      setStatus('✓ Review submitted. Thanks for keeping NEEV honest.', 'success');
-      document.getElementById('submitBtn').innerText = 'Review submitted ✓';
-    } catch (err) {
-      setStatus('Could not submit — try again in a moment.', 'error');
-      document.getElementById('submitBtn').disabled = false;
-    }
-  }
-
-  function setStatus(msg, type) {
-    const el = document.getElementById('status');
-    el.innerText = msg;
-    el.className = 'status-line ' + type;
-  }
+function setStatus(msg, type) {
+  const el = document.getElementById('submitStatus');
+  el.innerText = msg;
+  el.className = 'status-line ' + type;
+}
 </script>
+
+<style>
+.star-row { display:flex; gap:8px; margin-bottom:8px; }
+.star-btn {
+  font-size:28px; background:none; border:none; cursor:pointer;
+  color:var(--border); transition:color .15s;
+}
+.star-btn.active { color:#c9a227; }
+.rating-label { font-size:12px; color:var(--ink-dim); height:16px; }
+.mcq-options { display:flex; flex-direction:column; gap:8px; }
+.mcq-btn {
+  padding:12px 14px; border-radius:8px; border:1.5px solid var(--border);
+  background:var(--surface); color:var(--ink); font-size:14px;
+  text-align:left; cursor:pointer; transition:all .15s;
+}
+.mcq-btn.selected { border-color:var(--good); background:color-mix(in srgb,var(--good) 12%,transparent); }
+.mcq-btn:hover { border-color:var(--ink-dim); }
+.rehire-btn { flex:1; text-align:center; }
+</style>
 </body>
 </html>
