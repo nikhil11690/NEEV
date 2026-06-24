@@ -114,13 +114,20 @@
         body: JSON.stringify({ name: data.name, skills: confirmedSkills, nsqf_levels: confirmedLevels })
       });
 
+      // ✅ FIX: worker_id aur interview_completed bhi save karo
       sessionStorage.setItem('neev_result', JSON.stringify({
         name: data.name,
         skills: confirmedSkills,
         nsqf_mapping: data.nsqf_mapping.filter((_, i) => !removedIndices.has(i)),
-        hash: result.hash,
-        qr_code_base64: result.qr_code_base64
+        qr_code_base64: result.qr_code_base64,
+        worker_id: result.worker_id,
+        interview_completed: result.interview_completed || false
       }));
+
+      // worker_id alag se bhi store karo — interview page use karega
+      if (result.worker_id) {
+        sessionStorage.setItem('neev_worker_id', result.worker_id);
+      }
 
       window.location.href = 'credential.html';
     } catch (err) {

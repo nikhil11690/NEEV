@@ -135,10 +135,35 @@
       });
       if (!res.ok) throw new Error('bad response');
       const data = await res.json();
+
+      // ✅ FIX: interview complete karo backend mein
+      await markInterviewComplete(data.confidence_score);
+
       showResult(data);
     } catch (err) {
       setRecStatus('Evaluation failed — try again in a moment.', 'error');
       document.getElementById('submitBtn').disabled = false;
+    }
+  }
+
+  async function markInterviewComplete(score) {
+    const worker_id = sessionStorage.getItem('neev_worker_id');
+    if (!worker_id) return; // standalone interview, no passport to update
+
+    try {
+      await fetch(`${NEEV_API}/complete-interview?worker_id=${encodeURIComponent(worker_id)}&ai_score=${score}`, {
+        method: 'POST'
+      });
+
+      // ✅ sessionStorage bhi update karo taaki credential.html gate na dikhe
+      const stored = JSON.parse(sessionStorage.getItem('neev_result') || '{}');
+      stored.interview_completed = true;
+      stored.ai_validation_score = score;
+      stored.trust_score = score;
+      sessionStorage.setItem('neev_result', JSON.stringify(stored));
+    } catch (e) {
+      // Silent fail — result dikha do, backend miss ho toh bhi
+      console.warn('Could not mark interview complete:', e);
     }
   }
 
@@ -149,6 +174,11 @@
 
     const badgeClass = data.verified ? 'good' : 'bad';
     const levelClass = data.level === 'expert' ? 'good' : data.level === 'intermediate' ? 'brass' : 'bad';
+
+    const worker_id = sessionStorage.getItem('neev_worker_id');
+    const backLink = worker_id
+      ? `<a class="btn btn-primary" href="credential.html" style="margin-top:8px;">Passport dekhein →</a>`
+      : `<a class="btn btn-ghost" href="interview.html" style="margin-top:8px;">Try another skill</a>`;
 
     area.innerHTML = `
       <div class="banner ${badgeClass}">${data.verified ? '✓ Skill verified' : '✗ Not verified yet'}</div>
@@ -178,7 +208,7 @@
         <p style="font-size:14px;color:var(--ink-dim);line-height:1.6;">${data.feedback}</p>
       </div>
 
-      <a class="btn btn-ghost" href="interview.html">Try another skill</a>
+      ${backLink}
     `;
   }
 
