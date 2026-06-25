@@ -6,7 +6,6 @@
 <title>NEEV — Skill Passport for Every Worker</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  /* Landing specific styles */
   .hero {
     text-align: center;
     padding: 80px 24px 60px;
@@ -32,9 +31,7 @@
     margin-bottom: 18px;
     letter-spacing: -0.5px;
   }
-  .hero-title span {
-    color: var(--brass);
-  }
+  .hero-title span { color: var(--brass); }
   .hero-sub {
     font-size: 16px;
     color: var(--ink-dim);
@@ -77,8 +74,6 @@
     transition: border-color 0.15s;
   }
   .btn-hero-secondary:hover { border-color: var(--ink); }
-
-  /* How it works */
   .how-section {
     padding: 60px 24px;
     max-width: 800px;
@@ -111,7 +106,6 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 28px 24px;
-    position: relative;
   }
   .step-num {
     width: 36px;
@@ -139,8 +133,6 @@
     color: var(--ink-dim);
     line-height: 1.6;
   }
-
-  /* User type cards */
   .user-section {
     padding: 20px 24px 80px;
     max-width: 800px;
@@ -204,8 +196,6 @@
     font-weight: 600;
     color: var(--brass);
   }
-
-  /* Stats bar */
   .stats-bar {
     background: var(--bg-raised);
     border-top: 1px solid var(--line);
@@ -215,7 +205,6 @@
     justify-content: center;
     gap: 60px;
     flex-wrap: wrap;
-    margin-bottom: 0;
   }
   .stat-item { text-align: center; }
   .stat-item .num {
@@ -229,8 +218,6 @@
     color: var(--ink-dim);
     margin-top: 4px;
   }
-
-  /* Tech stack */
   .tech-bar {
     text-align: center;
     padding: 24px;
@@ -250,7 +237,8 @@
   </div>
   <div style="display:flex;gap:16px;align-items:center;">
     <a href="stats.html" style="font-size:13.5px;color:var(--ink-dim);text-decoration:none;">Stats</a>
-    <a href="Worker/record.html" class="btn-hero-primary" style="padding:10px 20px;font-size:13.5px;">Get Started →</a>
+    <a href="login.html" style="font-size:13.5px;color:var(--ink-dim);text-decoration:none;">Log in</a>
+    <a href="signup.html" class="btn-hero-primary" style="padding:10px 20px;font-size:13.5px;">Get Started →</a>
   </div>
 </div>
 
@@ -264,8 +252,8 @@
     NEEV uses AI to listen to workers describe their skills in Hindi, verify them, and issue a tamper-proof digital credential — no reading or writing required.
   </p>
   <div class="hero-btns">
-    <a href="Worker/record.html" class="btn-hero-primary">🎙️ I'm a Worker</a>
-    <a href="Employer/verify.html" class="btn-hero-secondary">🛡️ I'm an Employer</a>
+    <a href="signup.html" class="btn-hero-primary">🎙️ I'm a Worker</a>
+    <a href="signup.html" class="btn-hero-secondary">🛡️ I'm an Employer</a>
   </div>
 </div>
 
@@ -316,7 +304,7 @@
   <div class="section-label">Who is NEEV for</div>
   <div class="section-title" style="margin-bottom:28px;">Two sides, one platform</div>
   <div class="user-cards">
-    <a href="Worker/record.html" class="user-card">
+    <a href="signup.html?role=worker" class="user-card">
       <div class="icon">👷</div>
       <div class="title">I'm a Worker</div>
       <div class="desc">Prove your skills without a certificate. Get hired faster with a verified digital passport.</div>
@@ -328,7 +316,7 @@
       </ul>
       <div class="card-cta">Get your passport →</div>
     </a>
-    <a href="Employer/verify.html" class="user-card">
+    <a href="signup.html?role=employer" class="user-card">
       <div class="icon">🏗️</div>
       <div class="title">I'm an Employer</div>
       <div class="desc">Verify worker credentials instantly. See trust scores, reviews, and fraud alerts in one scan.</div>
@@ -342,7 +330,6 @@
     </a>
   </div>
 
-  <!-- Extra links -->
   <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
     <a href="Worker/interview.html" class="user-card" style="flex:1;min-width:200px;padding:20px 24px;">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -384,11 +371,15 @@ async function loadStats() {
     document.getElementById('statVerifications').innerText = s.total_verifications;
     document.getElementById('statReviews').innerText = s.total_reviews;
     document.getElementById('statFraud').innerText = s.fraud_cases_detected;
-  } catch(e) {
-    // Silent fail — stats not critical for landing page
-  }
+  } catch(e) {}
 }
 loadStats();
+
+// Role pre-select from URL param
+const urlRole = new URLSearchParams(window.location.search).get('role');
+if (urlRole) {
+  sessionStorage.setItem('neev_signup_role', urlRole);
+}
 </script>
 
 </body>
