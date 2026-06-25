@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Create Account</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 420px;
+  }
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .auth-logo .seal {
+    margin: 0 auto 12px;
+  }
+  .auth-logo .name {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .auth-logo .tagline {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+  }
+  .auth-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .auth-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .auth-sub {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 28px;
+  }
+  .role-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .role-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--ink-dim);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .role-btn.active {
+    border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 10%, transparent);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field input {
+    width: 100%;
+    padding: 13px 15px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-size: 14.5px;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--brass);
+  }
+  .avatar-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--brass);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    font-family: var(--display);
+    margin: 0 auto 20px;
+    transition: background 0.2s;
+  }
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .auth-footer a {
+    color: var(--brass);
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-box">
+
+    <div class="auth-logo">
+      <div class="seal stamp" style="width:44px;height:44px;font-size:18px;">
+        <span class="seal-mark">N</span>
+      </div>
+      <div class="name">NEEV</div>
+      <div class="tagline">Skill Passport for every worker</div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Join thousands of verified workers and employers</div>
+
+      <!-- Avatar preview -->
+      <div class="avatar-preview" id="avatarPreview">?</div>
+
+      <!-- Role toggle -->
+      <div class="role-toggle">
+        <button class="role-btn active" id="roleWorker" onclick="setRole('worker')">
+          👷 I'm a Worker
+        </button>
+        <button class="role-btn" id="roleEmployer" onclick="setRole('employer')">
+          🏗️ I'm an Employer
+        </button>
+      </div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="nameInput" placeholder="e.g. Raju Kumar"
+               oninput="updateAvatar(this.value)" />
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="e.g. raju@example.com" />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="passwordInput" placeholder="Min 6 characters" />
+      </div>
+
+      <button class="btn btn-primary" onclick="submitSignup()" id="signupBtn"
+              style="margin-top:8px;">
+        Create account →
+      </button>
+      <div class="status-line" id="status"></div>
+    </div>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Log in</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+let selectedRole = 'worker';
+
+function setRole(role) {
+  selectedRole = role;
+  document.getElementById('roleWorker').classList.toggle('active', role === 'worker');
+  document.getElementById('roleEmployer').classList.toggle('active', role === 'employer');
+}
+
+function updateAvatar(name) {
+  const first = name.trim().charAt(0).toUpperCase();
+  document.getElementById('avatarPreview').innerText = first || '?';
+}
+
+async function submitSignup() {
+  const name = document.getElementById('nameInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+
+  if (!name) return setStatus('Naam zaroori hai', 'error');
+  if (!email) return setStatus('Email zaroori hai', 'error');
+  if (password.length < 6) return setStatus('Password kam se kam 6 characters ka hona chahiye', 'error');
+
+  document.getElementById('signupBtn').disabled = true;
+  setStatus('Account bana rahe hain...', '');
+
+  try {
+    const res = await neevFetch('/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        role: selectedRole
+      })
+    });
+
+    // Token aur user info save karo
+    sessionStorage.setItem('neev_token', res.token);
+    sessionStorage.setItem('neev_user', JSON.stringify(res.user));
+
+    setStatus('Account ban gaya! Redirect ho rahe hain...', 'success');
+
+    // Role ke hisaab se redirect
+    setTimeout(() => {
+      if (res.user.role === 'worker') {
+        window.location.href = 'Worker/record.html';
+      } else {
+        window.location.href = 'Employer/verify.html';
+      }
+    }, 1000);
+
+  } catch(err) {
+    setStatus('Error: ' + err.message, 'error');
+    document.getElementById('signupBtn').disabled = false;
+  }
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.innerText = msg;
+  el.className = 'status-line ' + type;
+}
+</script>
+</body>
+</html>

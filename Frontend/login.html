@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEEV — Log In</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-box { width: 100%; max-width: 420px; }
+  .auth-logo { text-align: center; margin-bottom: 32px; }
+  .auth-logo .name { font-family: var(--display); font-size: 22px; font-weight: 700; }
+  .auth-logo .tagline { font-size: 13px; color: var(--ink-dim); margin-top: 4px; }
+  .auth-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .auth-title { font-family: var(--display); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .auth-sub { font-size: 13px; color: var(--ink-dim); margin-bottom: 28px; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12.5px; font-weight: 600;
+    color: var(--ink-dim); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field input {
+    width: 100%; padding: 13px 15px;
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; color: var(--ink); font-size: 14.5px;
+    box-sizing: border-box; transition: border-color 0.15s;
+  }
+  .field input:focus { outline: none; border-color: var(--brass); }
+  .auth-footer { text-align: center; margin-top: 20px; font-size: 13px; color: var(--ink-dim); }
+  .auth-footer a { color: var(--brass); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-box">
+
+    <div class="auth-logo">
+      <div class="seal stamp" style="width:44px;height:44px;font-size:18px;margin:0 auto 12px;">
+        <span class="seal-mark">N</span>
+      </div>
+      <div class="name">NEEV</div>
+      <div class="tagline">Skill Passport for every worker</div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Log in to your NEEV account</div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="e.g. raju@example.com" />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="passwordInput"
+               placeholder="Your password"
+               onkeydown="if(event.key==='Enter') submitLogin()" />
+      </div>
+
+      <button class="btn btn-primary" onclick="submitLogin()" id="loginBtn"
+              style="margin-top:8px;">
+        Log in →
+      </button>
+      <div class="status-line" id="status"></div>
+    </div>
+
+    <div class="auth-footer">
+      New to NEEV? <a href="signup.html">Create account</a>
+      &nbsp;·&nbsp;
+      <a href="index.html">← Home</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+async function submitLogin() {
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+
+  if (!email) return setStatus('Email zaroori hai', 'error');
+  if (!password) return setStatus('Password zaroori hai', 'error');
+
+  document.getElementById('loginBtn').disabled = true;
+  setStatus('Logging in...', '');
+
+  try {
+    const res = await neevFetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    sessionStorage.setItem('neev_token', res.token);
+    sessionStorage.setItem('neev_user', JSON.stringify(res.user));
+
+    setStatus('Login ho gaya! Redirect...', 'success');
+
+    setTimeout(() => {
+      if (res.user.role === 'worker') {
+        window.location.href = 'Worker/record.html';
+      } else {
+        window.location.href = 'Employer/verify.html';
+      }
+    }, 800);
+
+  } catch(err) {
+    setStatus('Error: ' + err.message, 'error');
+    document.getElementById('loginBtn').disabled = false;
+  }
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.innerText = msg;
+  el.className = 'status-line ' + type;
+}
+</script>
+</body>
+</html>
