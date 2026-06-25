@@ -1,5 +1,6 @@
 // NEEV — shared backend config
-const NEEV_API = "https://neev-amiu.onrender.com";
+
+const NEEV_API = "https://neev-1.onrender.com";
 
 async function neevFetch(path, options = {}) {
   const res = await fetch(`${NEEV_API}${path}`, options);
