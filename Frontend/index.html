@@ -1,68 +1,395 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>NEEV — Skill Passport</title>
+<title>NEEV — Skill Passport for Every Worker</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  /* Landing specific styles */
+  .hero {
+    text-align: center;
+    padding: 80px 24px 60px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: color-mix(in srgb, var(--brass) 15%, transparent);
+    color: var(--brass);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+  }
+  .hero-title span {
+    color: var(--brass);
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--ink-dim);
+    max-width: 480px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-hero-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-hero-primary:hover { opacity: 0.85; }
+  .btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--ink);
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid var(--line);
+    transition: border-color 0.15s;
+  }
+  .btn-hero-secondary:hover { border-color: var(--ink); }
+
+  /* How it works */
+  .how-section {
+    padding: 60px 24px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .section-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    text-align: center;
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 48px;
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+  }
+  .step {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 24px;
+    position: relative;
+  }
+  .step-num {
+    width: 36px;
+    height: 36px;
+    background: var(--brass);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .step-icon { font-size: 28px; margin-bottom: 12px; }
+  .step-title {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+
+  /* User type cards */
+  .user-section {
+    padding: 20px 24px 80px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .user-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 600px) {
+    .user-cards { grid-template-columns: 1fr; }
+  }
+  .user-card {
+    background: var(--bg-raised);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+    display: block;
+  }
+  .user-card:hover {
+    border-color: var(--brass);
+    transform: translateY(-2px);
+  }
+  .user-card .icon { font-size: 36px; margin-bottom: 16px; }
+  .user-card .title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .user-card .desc {
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .user-card .features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+  .user-card .features li {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    padding: 4px 0;
+  }
+  .user-card .features li::before {
+    content: "✓ ";
+    color: var(--good);
+    font-weight: 700;
+  }
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--brass);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    background: var(--bg-raised);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 28px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
+  .stat-item { text-align: center; }
+  .stat-item .num {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .stat-item .lbl {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+  }
+
+  /* Tech stack */
+  .tech-bar {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .tech-bar span { margin: 0 8px; }
+</style>
 </head>
 <body>
-<div class="shell" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
 
-  <div style="text-align:center;margin-bottom:48px;">
-    <div class="seal stamp" style="margin:0 auto 18px;"><span class="seal-mark">N</span></div>
-    <div style="font-family:var(--display);font-weight:600;font-size:34px;letter-spacing:1px;">NEEV</div>
-    <div style="color:var(--ink-dim);font-size:14px;margin-top:8px;">Voice-first, verified skill passport for every worker</div>
+<!-- NAV -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:100;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="seal stamp" style="width:32px;height:32px;font-size:13px;"><span class="seal-mark">N</span></div>
+    <span style="font-family:var(--display);font-weight:700;font-size:17px;">NEEV</span>
   </div>
-
-  <div class="grid-cards">
-    <a href="Worker/record.html" class="nav-card">
-      <div class="icon">🎙️</div>
-      <div>
-        <div class="title">I'm a Worker</div>
-        <div class="desc">Speak your skills, get a verified credential</div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-
-    <a href="Worker/interview.html" class="nav-card">
-      <div class="icon">🧠</div>
-      <div>
-        <div class="title">AI Skill Interview</div>
-        <div class="desc">Get verbally quizzed on a skill, scored live</div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-
-    <a href="Employer/verify.html" class="nav-card">
-      <div class="icon">🛡️</div>
-      <div>
-        <div class="title">I'm an Employer</div>
-        <div class="desc">Scan a passport, see trust score &amp; reviews</div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-
-    <a href="Employer/endorse.html" class="nav-card">
-      <div class="icon">🤝</div>
-      <div>
-        <div class="title">Endorse a Worker</div>
-        <div class="desc">Vouch for someone you've worked with</div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-
-    <a href="stats.html" class="nav-card">
-      <div class="icon">📊</div>
-      <div>
-        <div class="title">Platform Stats</div>
-        <div class="desc">Live numbers across NEEV</div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
+  <div style="display:flex;gap:16px;align-items:center;">
+    <a href="stats.html" style="font-size:13.5px;color:var(--ink-dim);text-decoration:none;">Stats</a>
+    <a href="Worker/record.html" class="btn-hero-primary" style="padding:10px 20px;font-size:13.5px;">Get Started →</a>
   </div>
-
-  <div class="footer-note">Powered by Groq Whisper · LLaMA · NSQF Framework</div>
 </div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🇮🇳 Built for India's Informal Workforce</div>
+  <h1 class="hero-title">
+    Every worker deserves<br>a <span>verified skill passport</span>
+  </h1>
+  <p class="hero-sub">
+    NEEV uses AI to listen to workers describe their skills in Hindi, verify them, and issue a tamper-proof digital credential — no reading or writing required.
+  </p>
+  <div class="hero-btns">
+    <a href="Worker/record.html" class="btn-hero-primary">🎙️ I'm a Worker</a>
+    <a href="Employer/verify.html" class="btn-hero-secondary">🛡️ I'm an Employer</a>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="num" id="statVerifications">—</div>
+    <div class="lbl">Credentials verified</div>
+  </div>
+  <div class="stat-item">
+    <div class="num" id="statReviews">—</div>
+    <div class="lbl">Employer reviews</div>
+  </div>
+  <div class="stat-item">
+    <div class="num" id="statFraud">—</div>
+    <div class="lbl">Fraud cases flagged</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section">
+  <div class="section-label">How it works</div>
+  <div class="section-title">From voice to verified — in minutes</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">🎙️</div>
+      <div class="step-title">Speak your skills</div>
+      <div class="step-desc">Worker describes their work experience in Hindi. No forms, no typing, no literacy required.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">🧠</div>
+      <div class="step-title">AI verifies live</div>
+      <div class="step-desc">NEEV asks a real-world question. Worker answers by voice. AI scores the answer instantly.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">📄</div>
+      <div class="step-title">Get skill passport</div>
+      <div class="step-desc">A tamper-proof QR credential is generated with trust score, NSQF levels, and employer reviews.</div>
+    </div>
+  </div>
+</div>
+
+<!-- USER TYPE CARDS -->
+<div class="user-section">
+  <div class="section-label">Who is NEEV for</div>
+  <div class="section-title" style="margin-bottom:28px;">Two sides, one platform</div>
+  <div class="user-cards">
+    <a href="Worker/record.html" class="user-card">
+      <div class="icon">👷</div>
+      <div class="title">I'm a Worker</div>
+      <div class="desc">Prove your skills without a certificate. Get hired faster with a verified digital passport.</div>
+      <ul class="features">
+        <li>Voice-first — no reading needed</li>
+        <li>AI skill interview in Hindi</li>
+        <li>NSQF-mapped credential</li>
+        <li>Shareable QR passport</li>
+      </ul>
+      <div class="card-cta">Get your passport →</div>
+    </a>
+    <a href="Employer/verify.html" class="user-card">
+      <div class="icon">🏗️</div>
+      <div class="title">I'm an Employer</div>
+      <div class="desc">Verify worker credentials instantly. See trust scores, reviews, and fraud alerts in one scan.</div>
+      <ul class="features">
+        <li>Scan QR to verify instantly</li>
+        <li>See trust score & fraud risk</li>
+        <li>Leave reviews after hiring</li>
+        <li>Community endorsements</li>
+      </ul>
+      <div class="card-cta">Verify a worker →</div>
+    </a>
+  </div>
+
+  <!-- Extra links -->
+  <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+    <a href="Worker/interview.html" class="user-card" style="flex:1;min-width:200px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">🧠</span>
+        <div>
+          <div class="title" style="font-size:14px;margin-bottom:4px;">AI Skill Interview</div>
+          <div class="desc" style="font-size:12px;margin-bottom:0;">Get verbally quizzed on any skill</div>
+        </div>
+        <span style="margin-left:auto;color:var(--brass);">→</span>
+      </div>
+    </a>
+    <a href="Employer/endorse.html" class="user-card" style="flex:1;min-width:200px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">🤝</span>
+        <div>
+          <div class="title" style="font-size:14px;margin-bottom:4px;">Endorse a Worker</div>
+          <div class="desc" style="font-size:12px;margin-bottom:0;">Vouch for someone you've worked with</div>
+        </div>
+        <span style="margin-left:auto;color:var(--brass);">→</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- TECH BAR -->
+<div class="tech-bar">
+  Powered by
+  <span>Groq Whisper</span>·
+  <span>LLaMA 3.3-70b</span>·
+  <span>NSQF Framework</span>·
+  <span>SHA256 Tamper Detection</span>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+async function loadStats() {
+  try {
+    const s = await neevFetch('/stats');
+    document.getElementById('statVerifications').innerText = s.total_verifications;
+    document.getElementById('statReviews').innerText = s.total_reviews;
+    document.getElementById('statFraud').innerText = s.fraud_cases_detected;
+  } catch(e) {
+    // Silent fail — stats not critical for landing page
+  }
+}
+loadStats();
+</script>
+
 </body>
 </html>
