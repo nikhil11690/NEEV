@@ -21,9 +21,8 @@ def run_migrations():
         try:
             cur.execute(sql)
         except sqlite3.OperationalError:
-            pass  # column already exists — skip silently
+            pass
 
-    # Assign UUID to any existing workers that don't have one
     cur.execute("SELECT id, worker_id FROM workers")
     for row_id, wid in cur.fetchall():
         if not wid:
@@ -32,7 +31,6 @@ def run_migrations():
                 (str(uuid.uuid4()), row_id)
             )
 
-    # Create EmployerMCQ table if not exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS employer_mcqs (
             id INTEGER PRIMARY KEY,
@@ -46,7 +44,6 @@ def run_migrations():
         )
     """)
 
-    # Add worker_id to verifications if missing
     try:
         cur.execute("ALTER TABLE verifications ADD COLUMN worker_id TEXT")
     except sqlite3.OperationalError:
@@ -90,13 +87,14 @@ app.include_router(trust_router)
 app.include_router(passport_router)
 app.include_router(community_router)
 
-app.mount("/static", StaticFiles(directory="../Frontend", html=True), name="frontend")
-
+# Routes PEHLE — mount ke BAAD nahi
+@app.get("/ping")
+def ping():
+    return {"message": "pong"}
 
 @app.get("/")
 def root():
     return {"status": "working", "project": "NEEV Skill Passport"}
 
-@app.get("/ping")
-def ping():
-    return {"message": "pong"}
+# Static mount SABSE LAST MEIN
+app.mount("/static", StaticFiles(directory="../Frontend", html=True), name="frontend")
