@@ -66,6 +66,8 @@ from Nikhil.verify import router as verify_router
 from Nikhil.trust import router as trust_router
 from Nikhil.passport import router as passport_router
 from Nikhil.community import router as community_router
+from Nikhil.auth import router as auth_router
+
 
 app = FastAPI()
 
@@ -86,6 +88,7 @@ app.include_router(verify_router)
 app.include_router(trust_router)
 app.include_router(passport_router)
 app.include_router(community_router)
+app.include_router(auth_router)
 
 # Routes PEHLE — mount ke BAAD nahi
 @app.get("/ping")
