@@ -83,6 +83,16 @@ class CommunityEndorsement(Base):
     comment = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class AuthUser(Base):
+    __tablename__ = "auth_users"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String)
+    role = Column(String)  # "worker" ya "employer"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 
 Base.metadata.create_all(engine)
 
