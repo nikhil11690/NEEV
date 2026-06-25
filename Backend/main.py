@@ -10,6 +10,33 @@ def run_migrations():
     conn = sqlite3.connect("neev.db")
     cur = conn.cursor()
 
+    # Pehle workers table create karo agar exist nahi karta
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS workers (
+            id INTEGER PRIMARY KEY,
+            worker_id TEXT,
+            name TEXT UNIQUE,
+            skills TEXT,
+            nsqf_levels TEXT,
+            experience_years INTEGER DEFAULT 0,
+            trust_score REAL DEFAULT 0.0,
+            ai_validation_score REAL DEFAULT 0.0,
+            qr_base64 TEXT,
+            interview_completed INTEGER DEFAULT 0,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS verifications (
+            id INTEGER PRIMARY KEY,
+            worker_name TEXT,
+            worker_id TEXT,
+            verified_at TEXT
+        )
+    """)
+
     migrations = [
         "ALTER TABLE workers ADD COLUMN worker_id TEXT",
         "ALTER TABLE workers ADD COLUMN nsqf_levels TEXT",
