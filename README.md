@@ -323,6 +323,7 @@ NEEV/
 
 ## 🔌 API Endpoints
 
+
 ### Auth
 | Method | Endpoint | Description |
 |---|---|---|
