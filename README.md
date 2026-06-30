@@ -14,7 +14,7 @@
 | Resource | Link |
 |---|---|
 | 🎥 Demo Video | `[Coming Soon]` |
-| 🌐 Live Prototype | https://neev-1.onrender.com |
+| 🌐 Live Prototype | https://neev-amiu.onrender.com/|
 | 📊 Presentation | `[Coming Soon]` |
 
 ---
